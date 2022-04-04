@@ -55,7 +55,7 @@ namespace DurableMediator
                 }
             }, CancellationToken.None);
 
-            return result.DurableOrchestrationState.Select(Map).Any(x => x.AffectedEntityId == affectedEntityId);
+            return false; // TODO: result.DurableOrchestrationState.Select(Map); // TODO: .Any(x => x.AffectedEntityId == affectedEntityId);
         }
 
         private IDurableClient GetClient()
@@ -67,7 +67,6 @@ namespace DurableMediator
             return new WorkflowStatus(
                 state?.WorkflowName ?? status.InstanceId,
                 status.InstanceId,
-                state?.AffectedEntityId,
                 Map(status?.RuntimeStatus));
         }
 

@@ -1,3 +1,3 @@
 ﻿namespace DurableMediator;
 
-internal record WorkflowState(string WorkflowName, Guid? AffectedEntityId, string? ExceptionMessage);
+internal record WorkflowState(string WorkflowName, string? ExceptionMessage);

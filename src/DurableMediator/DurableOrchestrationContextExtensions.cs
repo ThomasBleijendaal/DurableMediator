@@ -38,45 +38,45 @@ public static class DurableOrchestrationContextExtensions
         throw new OrchestrationRetryException();
     }
 
-    /// <summary>
-    /// Starts a sub orchestration of the given workflow and waits for the result.
-    /// </summary>
-    /// <typeparam name="TWorkflowRequest"></typeparam>
-    /// <typeparam name="TWorkflow"></typeparam>
-    /// <typeparam name="TWorkflowResult"></typeparam>
-    /// <param name="context"></param>
-    /// <param name="replaySafeLogger"></param>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    public static Task<TWorkflowResult?> RunSubWorkflowAsync<TWorkflowRequest, TWorkflow, TWorkflowResult>(
-        this IDurableOrchestrationContext context,
-        ILogger replaySafeLogger,
-        TWorkflowRequest request)
-        where TWorkflowRequest : IWorkflowRequest
-        where TWorkflow : IWorkflow<TWorkflowRequest>, IWorkflowResult<TWorkflowResult>
-    {
-        replaySafeLogger.LogInformation("Starting sub orchestration with {instanceId}", request.InstanceId);
+    ///// <summary>
+    ///// Starts a sub orchestration of the given workflow and waits for the result.
+    ///// </summary>
+    ///// <typeparam name="TWorkflowRequest"></typeparam>
+    ///// <typeparam name="TWorkflow"></typeparam>
+    ///// <typeparam name="TWorkflowResult"></typeparam>
+    ///// <param name="context"></param>
+    ///// <param name="replaySafeLogger"></param>
+    ///// <param name="request"></param>
+    ///// <returns></returns>
+    //public static Task<TWorkflowResult?> RunSubWorkflowAsync<TWorkflowRequest, TWorkflow, TWorkflowResult>(
+    //    this IDurableOrchestrationContext context,
+    //    ILogger replaySafeLogger,
+    //    TWorkflowRequest request)
+    //    where TWorkflowRequest : IWorkflowRequest
+    //    where TWorkflow : IWorkflow<TWorkflowRequest>, IWorkflowResult<TWorkflowResult>
+    //{
+    //    replaySafeLogger.LogInformation("Starting sub orchestration with {instanceId}", request.InstanceId);
 
-        return context.CallSubOrchestratorAsync<TWorkflowResult?>(typeof(TWorkflow).Name, request.InstanceId, request);
-    }
+    //    return context.CallSubOrchestratorAsync<TWorkflowResult?>(typeof(TWorkflow).Name, request.InstanceId, request);
+    //}
 
-    /// <summary>
-    /// Triggers an orchestration of the given workflow without waiting for the result.
-    /// </summary>
-    /// <typeparam name="TWorkflowRequest"></typeparam>
-    /// <typeparam name="TWorkflow"></typeparam>
-    /// <param name="context"></param>
-    /// <param name="replaySafeLogger"></param>
-    /// <param name="request"></param>
-    public static void TriggerWorkflow<TWorkflowRequest, TWorkflow>(
-        this IDurableOrchestrationContext context,
-        ILogger replaySafeLogger,
-        TWorkflowRequest request)
-        where TWorkflowRequest : IWorkflowRequest
-        where TWorkflow : IWorkflow<TWorkflowRequest>
-    {
-        replaySafeLogger.LogInformation("Starting orchestration with {instanceId}", request.InstanceId);
+    ///// <summary>
+    ///// Triggers an orchestration of the given workflow without waiting for the result.
+    ///// </summary>
+    ///// <typeparam name="TWorkflowRequest"></typeparam>
+    ///// <typeparam name="TWorkflow"></typeparam>
+    ///// <param name="context"></param>
+    ///// <param name="replaySafeLogger"></param>
+    ///// <param name="request"></param>
+    //public static void TriggerWorkflow<TWorkflowRequest, TWorkflow>(
+    //    this IDurableOrchestrationContext context,
+    //    ILogger replaySafeLogger,
+    //    TWorkflowRequest request)
+    //    where TWorkflowRequest : IWorkflowRequest
+    //    where TWorkflow : IWorkflow<TWorkflowRequest>
+    //{
+    //    replaySafeLogger.LogInformation("Starting orchestration with {instanceId}", request.InstanceId);
 
-        context.StartNewOrchestration(typeof(TWorkflow).Name, request, request.InstanceId);
-    }
+    //    context.StartNewOrchestration(typeof(TWorkflow).Name, request, request.InstanceId);
+    //}
 }

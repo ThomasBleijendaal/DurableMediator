@@ -1,15 +1,16 @@
 ﻿using DurableMediator;
+using MediatR;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using WorkflowFunctionApp.Requests;
 
 namespace WorkflowFunctionApp.Workflows
 {
-    internal record ExampleWorkflow(ILogger<ExampleWorkflow> Logger) : IWorkflow<ExampleWorkflowRequest>
+    internal record ExampleWorkflow(ILogger<ExampleWorkflow> Logger) : IWorkflow<ExampleWorkflowRequest, Unit>
     {
         public string Name => "Example";
 
-        public async Task OrchestrateAsync(
+        public async Task<Unit> OrchestrateAsync(
             IDurableOrchestrationContext context, 
             ExampleWorkflowRequest request, 
             EntityId entityId,
@@ -23,21 +24,32 @@ namespace WorkflowFunctionApp.Workflows
 
             logger.LogInformation("Response from Step A was {response}", stepAResponse);
 
-            await context.TryStepUntilSuccessfulAsync(
-                async () =>
-                {
-                    var stepBResponse = await mediator.SendAsync(new RequestB(request.Id));
+            try
+            {
+                await context.TryStepUntilSuccessfulAsync(
+                    async () =>
+                    {
+                        var stepBResponse = await mediator.SendAsync(new RequestB(request.Id));
 
-                    logger.LogInformation("Step B was {success}", stepBResponse.Success ? "successful" : "not successful");
+                        logger.LogInformation("Step B was {success}", stepBResponse.Success ? "successful" : "not successful");
 
-                    return stepBResponse.Success;
-                },
-                maxRetries: 10,
-                millisecondsBetweenAttempt: 100);
+                        return stepBResponse.Success;
+                    },
+                    maxRetries: 3,
+                    millisecondsBetweenAttempt: 100);
+            }
+            catch (OrchestrationRetryException)
+            {
+                logger.LogWarning("Failed to do Step B - not going to do Step C");
+
+                return Unit.Value;
+            }
 
             await mediator.SendAsync(new RequestC(stepAResponse.Id));
 
             logger.LogInformation("Workflow done");
+
+            return Unit.Value;
         }
     }
 }

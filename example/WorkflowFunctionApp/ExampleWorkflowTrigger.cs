@@ -6,14 +6,14 @@ using WorkflowFunctionApp.Workflows;
 
 namespace WorkflowFunctionApp;
 
-internal record ExampleWorkflowTrigger(
-    IWorkflowOrchestrator<ExampleWorkflowRequest, ExampleWorkflow> WorkflowOrchestrator)
+internal static class ExampleWorkflowTrigger
 {
     [FunctionName(nameof(ExampleWorkflowTrigger))]
-    public async Task<IActionResult> TriggerOrchestratorAsync(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestMessage req)
+    public static async Task<IActionResult> TriggerOrchestratorAsync(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestMessage req,
+        [Workflow] IWorkflowOrchestrator orchestrator)
     {
-        var start = await WorkflowOrchestrator.StartNewAsync(new ExampleWorkflowRequest(Guid.NewGuid()));
+        var start = await orchestrator.StartNewAsync(new ExampleWorkflowRequest(Guid.NewGuid()));
 
         return new AcceptedResult("", start);
     }

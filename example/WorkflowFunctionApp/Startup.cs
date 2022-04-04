@@ -22,9 +22,7 @@ namespace WorkflowFunctionApp
                 logging.AddConsole();
             });
 
-            builder.Services.AddMediatR(typeof(Startup));
-
-            builder.AddDurableMediator();
+            builder.AddDurableMediator(typeof(Startup));
             builder.Services.AddTransient<ExampleWorkflow>();
         }
     }

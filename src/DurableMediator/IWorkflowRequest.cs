@@ -1,9 +1,18 @@
-﻿namespace DurableMediator;
+﻿using MediatR;
+using Newtonsoft.Json;
 
-public interface IWorkflowRequest
+namespace DurableMediator;
+
+public interface IWorkflowRequest<TResponse>
 {
     public string InstanceId { get; }
-
-    // TODO: make generic?
-    public Guid? AffectedEntityId { get; }
 }
+
+public interface IWorkflowRequest : IWorkflowRequest<Unit>
+{
+
+}
+
+internal record GenericWorkflowRequest(
+    string InstanceId,
+    [JsonProperty(ItemTypeNameHandling = TypeNameHandling.All)] object Request) : IWorkflowRequest;
