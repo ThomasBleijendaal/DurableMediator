@@ -6,5 +6,5 @@ public interface IWorkflowMonitor
 
     Task<IReadOnlyList<WorkflowStatus>> GetRecentWorkflowsAsync(string instanceIdPrefix);
 
-    Task<bool> HasRunningTaskAsync(string instanceIdPrefix, Guid affectedEntityId);
+    Task<bool> HasRunningTaskAsync(string instanceIdPrefix);
 }

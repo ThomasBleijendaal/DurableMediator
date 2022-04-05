@@ -2,7 +2,7 @@
 
 namespace DurableMediator;
 
-public class DurableMediatorEntity : IDurableMediator
+internal class DurableMediatorEntity : IDurableMediator
 {
     private readonly IMediator _mediator;
 
@@ -12,19 +12,19 @@ public class DurableMediatorEntity : IDurableMediator
         _mediator = mediator;
     }
 
-    public async Task SendObjectAsync(WorkflowRequest request)
+    public async Task SendObjectAsync(MediatorRequest request)
     {
         await _mediator.Send(request.Request);
     }
 
-    public async Task<WorkflowResponse> SendObjectWithResponseAsync(WorkflowRequestWithResponse request)
+    public async Task<MediatorResponse> SendObjectWithResponseAsync(MediatorRequestWithResponse request)
     {
         try
         {
             // the dynamic is needed for the dynamic dispatch of Send()
             // TODO: ConfigureAwait for all
             var result = await _mediator.Send(request.Request);
-            return new WorkflowResponse(result);
+            return new MediatorResponse(result);
         }
         catch (InvalidOperationException ex)
         {

@@ -3,8 +3,7 @@
 namespace DurableMediator;
 
 /// <summary>
-/// Entry point for workflow orchestration. This method starts new durable task invocations
-/// and orchestrates them.
+/// Entry point for workflow orchestration. This method starts new durable orchestration of the associated workflow.
 /// </summary>
 public interface IWorkflowOrchestrator
 {

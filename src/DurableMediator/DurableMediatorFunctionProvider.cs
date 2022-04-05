@@ -1,11 +1,12 @@
 ﻿using System.Collections.Immutable;
 using System.Reflection;
+using DurableMediator.Metadata;
 using Microsoft.Azure.WebJobs.Script.Description;
 using Newtonsoft.Json.Linq;
 
 namespace DurableMediator;
 
-public class DurableMediatorFunctionProvider : IFunctionProvider
+internal class DurableMediatorFunctionProvider : IFunctionProvider
 {
     private readonly IEnumerable<string> _workflows;
 
@@ -14,7 +15,8 @@ public class DurableMediatorFunctionProvider : IFunctionProvider
         _workflows = workflows;
     }
 
-    public ImmutableDictionary<string, ImmutableArray<string>> FunctionErrors { get; } = new Dictionary<string, ImmutableArray<string>>().ToImmutableDictionary();
+    public ImmutableDictionary<string, ImmutableArray<string>> FunctionErrors { get; } 
+        = new Dictionary<string, ImmutableArray<string>>().ToImmutableDictionary();
 
     public Task<ImmutableArray<FunctionMetadata>> GetFunctionMetadataAsync()
     {

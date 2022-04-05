@@ -1,9 +1,9 @@
 ﻿using Microsoft.Azure.WebJobs.Script.Description;
 using Newtonsoft.Json;
 
-namespace DurableMediator;
+namespace DurableMediator.Metadata;
 
-public class EntityTriggerMetadata
+internal class EntityTriggerMetadata
 {
     [JsonProperty("name")]
     public string Name { get; set; } = "ctx";

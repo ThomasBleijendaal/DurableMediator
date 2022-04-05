@@ -8,12 +8,12 @@ public static class DurableMediatorExtensions
     {
         if (typeof(TResponse) == typeof(Unit))
         {
-            await mediator.SendObjectAsync(new WorkflowRequest((IRequest<Unit>)request));
+            await mediator.SendObjectAsync(new MediatorRequest((IRequest<Unit>)request));
 
             return default!;
         }
 
-        var response = await mediator.SendObjectWithResponseAsync(new WorkflowRequestWithResponse((IRequest<object>)request));
+        var response = await mediator.SendObjectWithResponseAsync(new MediatorRequestWithResponse((IRequest<object>)request));
 
         return (TResponse)(response?.Response ?? throw new Exception("Received an empty response"));
     }

@@ -3,7 +3,5 @@ using Newtonsoft.Json;
 
 namespace DurableMediator;
 
-// TODO: rename 
-
 [JsonObject(ItemTypeNameHandling = TypeNameHandling.All)]
-public record WorkflowRequest(IRequest<Unit> Request);
+public record MediatorRequest(IRequest<Unit> Request);

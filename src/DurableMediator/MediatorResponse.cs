@@ -3,4 +3,4 @@
 namespace DurableMediator;
 
 [JsonObject(ItemTypeNameHandling = TypeNameHandling.All)]
-public record WorkflowRequestWithResponse(dynamic Request);
+public record MediatorResponse(object Response);

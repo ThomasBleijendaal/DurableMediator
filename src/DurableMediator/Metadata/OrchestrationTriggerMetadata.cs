@@ -1,15 +1,15 @@
 ﻿using Microsoft.Azure.WebJobs.Script.Description;
 using Newtonsoft.Json;
 
-namespace DurableMediator;
+namespace DurableMediator.Metadata;
 
-public class WorkflowMetadata
+internal class OrchestrationTriggerMetadata
 {
     [JsonProperty("name")]
-    public string Name { get; set; } = "orchestrator";
+    public string Name { get; set; } = "ctx";
 
     [JsonProperty("type")]
-    public string Type { get; set; } = "workflow";
+    public string Type { get; set; } = "orchestrationTrigger";
 
     [JsonProperty("direction")]
     public BindingDirection Direction { get; set; } = BindingDirection.In;

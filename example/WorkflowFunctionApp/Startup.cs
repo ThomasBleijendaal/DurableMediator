@@ -1,11 +1,9 @@
-﻿using MediatR;
+﻿using System.Runtime.CompilerServices;
 using DurableMediator;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using WorkflowFunctionApp;
-using WorkflowFunctionApp.Workflows;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
+using WorkflowFunctionApp;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: InternalsVisibleTo("DurableMediator")]
@@ -23,7 +21,6 @@ namespace WorkflowFunctionApp
             });
 
             builder.AddDurableMediator(typeof(Startup));
-            builder.Services.AddTransient<ExampleWorkflow>();
         }
     }
 }

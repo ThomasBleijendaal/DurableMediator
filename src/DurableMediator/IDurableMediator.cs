@@ -7,6 +7,6 @@
 /// </summary>
 public interface IDurableMediator
 {
-    Task SendObjectAsync(WorkflowRequest request);
-    Task<WorkflowResponse> SendObjectWithResponseAsync(WorkflowRequestWithResponse request);
+    Task SendObjectAsync(MediatorRequest request);
+    Task<MediatorResponse> SendObjectWithResponseAsync(MediatorRequestWithResponse request);
 }

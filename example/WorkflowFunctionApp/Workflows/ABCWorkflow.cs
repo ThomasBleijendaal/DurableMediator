@@ -6,13 +6,13 @@ using WorkflowFunctionApp.Requests;
 
 namespace WorkflowFunctionApp.Workflows
 {
-    internal record ExampleWorkflow(ILogger<ExampleWorkflow> Logger) : IWorkflow<ExampleWorkflowRequest, Unit>
+    internal record ABCWorkflow(ILogger<ABCWorkflow> Logger) : IWorkflow<ABCWorkflowRequest, Unit>
     {
-        public string Name => "Example";
+        public string Name => "ABC";
 
         public async Task<Unit> OrchestrateAsync(
             IDurableOrchestrationContext context, 
-            ExampleWorkflowRequest request, 
+            ABCWorkflowRequest request, 
             EntityId entityId,
             IDurableMediator mediator)
         {

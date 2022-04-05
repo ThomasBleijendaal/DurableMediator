@@ -78,7 +78,7 @@ internal class WorkflowOrchestrator : IWorkflowOrchestrator
 
 internal interface IWorkflowResolver
 {
-    IWorkflow GetWorkflow(string workflowRequestName);
+    IWorkflowWrapper GetWorkflow(string workflowRequestName);
 
     EntityId GetEntityId(IDurableOrchestrationContext context);
 }
@@ -103,7 +103,7 @@ internal class WorkflowResolver : IWorkflowResolver
         return new EntityId(nameof(DurableMediatorEntity), input.InstanceId);
     }
 
-    public IWorkflow GetWorkflow(string workflowRequestName)
+    public IWorkflowWrapper GetWorkflow(string workflowRequestName)
     {
         if (!_workflowDescriptors.TryGetValue(workflowRequestName, out var descriptor))
         {
@@ -116,7 +116,7 @@ internal class WorkflowResolver : IWorkflowResolver
         var wrapper = Activator.CreateInstance(wrapperType, _serviceProvider.GetService(workflowType))
             ?? throw new InvalidOperationException("Failed to create workflow wrapper");
 
-        return (IWorkflow)wrapper;
+        return (IWorkflowWrapper)wrapper;
     }
 }
 
