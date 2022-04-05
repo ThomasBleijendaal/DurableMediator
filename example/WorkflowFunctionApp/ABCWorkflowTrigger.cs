@@ -11,9 +11,9 @@ internal static class ABCWorkflowTrigger
     [FunctionName(nameof(ABCWorkflowTrigger))]
     public static async Task<IActionResult> TriggerOrchestratorAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "abc")] HttpRequestMessage req,
-        [Workflow] IWorkflowOrchestrator orchestrator)
+        [Workflow] IWorkflowStarter starter)
     {
-        var start = await orchestrator.StartNewAsync(new ABCWorkflowRequest(Guid.NewGuid()));
+        var start = await starter.StartNewAsync(new ABCWorkflowRequest(Guid.NewGuid()));
 
         return new AcceptedResult("", start);
     }

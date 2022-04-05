@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
-namespace DurableMediator;
+namespace DurableMediator.Functions;
 
 internal static class WorkflowOrchestratorFunction
 {

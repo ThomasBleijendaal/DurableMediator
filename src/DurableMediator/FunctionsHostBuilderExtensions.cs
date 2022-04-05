@@ -19,7 +19,8 @@ public static class FunctionsHostBuilderExtensions
             .ValidateDataAnnotations();
 
         builder.Services.AddTransient<IWorkflowMonitor, WorkflowMonitor>();
-        builder.Services.AddTransient(typeof(IWorkflowOrchestrator), typeof(WorkflowOrchestrator));
+        builder.Services.AddTransient<IWorkflowStarter, WorkflowStarter>();
+        builder.Services.AddTransient<IWorkflowOrchestrator, WorkflowOrchestrator>();
 
         builder.Services.AddMediatR(handlerAssemblyMarkerTypes);
 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.WebJobs;
 
 
-namespace DurableMediator;
+namespace DurableMediator.Bindings;
 
 internal static class WorkflowBindingExtension
 {

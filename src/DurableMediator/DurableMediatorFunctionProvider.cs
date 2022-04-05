@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Reflection;
+using DurableMediator.Functions;
 using DurableMediator.Metadata;
 using Microsoft.Azure.WebJobs.Script.Description;
 using Newtonsoft.Json.Linq;
@@ -45,7 +46,7 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
             Name = nameof(DurableMediatorEntity),
             FunctionDirectory = null,
             ScriptFile = $"assembly:{assembly.FullName}",
-            EntryPoint = $"{assembly.GetName().Name}.{nameof(DurableMediatorFunction)}.{nameof(DurableMediatorFunction.RunAsync)}",
+            EntryPoint = $"{assembly.GetName().Name}.Functions.{nameof(DurableMediatorFunction)}.{nameof(DurableMediatorFunction.RunAsync)}",
             Language = "DotNetAssembly"
         };
 
@@ -64,7 +65,7 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
             Name = workflowName,
             FunctionDirectory = null,
             ScriptFile = $"assembly:{assembly.FullName}",
-            EntryPoint = $"{assembly.GetName().Name}.{nameof(WorkflowOrchestratorFunction)}.{nameof(WorkflowOrchestratorFunction.OrchestarateAsync)}",
+            EntryPoint = $"{assembly.GetName().Name}.Functions.{nameof(WorkflowOrchestratorFunction)}.{nameof(WorkflowOrchestratorFunction.OrchestarateAsync)}",
             Language = "DotNetAssembly"
         };
 

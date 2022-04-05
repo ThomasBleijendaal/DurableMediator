@@ -50,9 +50,9 @@ internal class WorkflowMonitor : IWorkflowMonitor
             InstanceIdPrefix = instanceIdPrefix,
             RuntimeStatus = new[]
             {
-                    OrchestrationRuntimeStatus.Pending,
-                    OrchestrationRuntimeStatus.Running
-                }
+                OrchestrationRuntimeStatus.Pending,
+                OrchestrationRuntimeStatus.Running
+            }
         }, token).ConfigureAwait(false);
 
         return result.DurableOrchestrationState.Any();

@@ -1,10 +1,10 @@
-﻿using DurableMediator;
+﻿using DurableMediator.Bindings;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 
 [assembly: WebJobsStartup(typeof(WorkflowBindingStartup))]
 
-namespace DurableMediator;
+namespace DurableMediator.Bindings;
 
 internal class WorkflowBindingStartup : IWebJobsStartup
 {
