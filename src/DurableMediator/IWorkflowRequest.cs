@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Newtonsoft.Json;
 
 namespace DurableMediator;
 
@@ -12,7 +11,3 @@ public interface IWorkflowRequest : IWorkflowRequest<Unit>
 {
 
 }
-
-internal record GenericWorkflowRequest(
-    string InstanceId,
-    [JsonProperty(ItemTypeNameHandling = TypeNameHandling.All)] object Request) : IWorkflowRequest;

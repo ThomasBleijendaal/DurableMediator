@@ -7,20 +7,19 @@ using WorkflowFunctionApp;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: InternalsVisibleTo("DurableMediator")]
-namespace WorkflowFunctionApp
+namespace WorkflowFunctionApp;
+
+public class Startup : FunctionsStartup
 {
-    public class Startup : FunctionsStartup
+    public override void Configure(IFunctionsHostBuilder builder)
     {
-        public override void Configure(IFunctionsHostBuilder builder)
+        var config = builder.GetContext().Configuration;
+
+        builder.Services.AddLogging(logging =>
         {
-            var config = builder.GetContext().Configuration;
+            logging.AddConsole();
+        });
 
-            builder.Services.AddLogging(logging =>
-            {
-                logging.AddConsole();
-            });
-
-            builder.AddDurableMediator(typeof(Startup));
-        }
+        builder.AddDurableMediator(typeof(Startup));
     }
 }

@@ -17,6 +17,6 @@ internal class RequestBHandler : IRequestHandler<RequestB, RequestBResponse>
     {
         _logger.LogInformation("Processing RequestB");
 
-        return Task.FromResult(new RequestBResponse(Random.Shared.NextDouble() < 0.3));
+        return Task.FromResult(new RequestBResponse(Random.Shared.NextDouble() < 0.3, Guid.NewGuid()));
     }
 }

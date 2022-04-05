@@ -1,3 +1,9 @@
 ﻿namespace DurableMediator;
 
-public record WorkflowStatus(string Name, string InstanceId, WorkflowRuntimeStatus Status, string? ExceptionMessage);
+public record WorkflowStatus(
+    string Name,
+    string InstanceId, 
+    WorkflowRuntimeStatus Status, 
+    DateTime CreateTime,
+    DateTime LastUpdateTime,
+    string? ExceptionMessage);

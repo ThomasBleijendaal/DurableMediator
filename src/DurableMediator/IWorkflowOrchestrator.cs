@@ -5,7 +5,7 @@ namespace DurableMediator;
 /// <summary>
 /// Entry point for workflow orchestration. This method starts new durable orchestration of the associated workflow.
 /// </summary>
-public interface IWorkflowOrchestrator
+public interface IWorkflowOrchestrator // TODO: rename to IWorkflowStarter
 {
     Task<WorkflowStartResult> StartNewAsync<TRequest, TResponse>(TRequest input)
         where TRequest : IWorkflowRequest<TResponse>;
@@ -13,5 +13,6 @@ public interface IWorkflowOrchestrator
     Task<WorkflowStartResult> StartNewAsync<TRequest>(TRequest input)
         where TRequest : IWorkflowRequest;
 
+    // TODO: move to internal interface
     Task OrchestrateAsync(IDurableOrchestrationContext context);
 }

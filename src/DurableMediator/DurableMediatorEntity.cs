@@ -14,7 +14,7 @@ internal class DurableMediatorEntity : IDurableMediator
 
     public async Task SendObjectAsync(MediatorRequest request)
     {
-        await _mediator.Send(request.Request);
+        await _mediator.Send(request.Request).ConfigureAwait(false);
     }
 
     public async Task<MediatorResponse> SendObjectWithResponseAsync(MediatorRequestWithResponse request)
@@ -22,8 +22,7 @@ internal class DurableMediatorEntity : IDurableMediator
         try
         {
             // the dynamic is needed for the dynamic dispatch of Send()
-            // TODO: ConfigureAwait for all
-            var result = await _mediator.Send(request.Request);
+            var result = await _mediator.Send(request.Request).ConfigureAwait(false);
             return new MediatorResponse(result);
         }
         catch (InvalidOperationException ex)

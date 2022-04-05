@@ -1,9 +1,8 @@
 ﻿using DurableMediator;
 
-namespace WorkflowFunctionApp.Workflows
+namespace WorkflowFunctionApp.Workflows;
+
+internal record ABCWorkflowRequest(Guid Id) : IWorkflowRequest
 {
-    internal record ABCWorkflowRequest(Guid Id) : IWorkflowRequest
-    {
-        public string InstanceId => $"aaa-{Id}";
-    }
+    public string InstanceId => $"aaa-{Id}";
 }

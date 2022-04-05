@@ -33,7 +33,7 @@ internal class WorkflowOrchestrator : IWorkflowOrchestrator
 
         var request = new GenericWorkflowRequest(input.InstanceId, input);
 
-        await client.StartNewAsync(typeof(TRequest).Name, request.InstanceId, request);
+        await client.StartNewAsync(typeof(TRequest).Name, request.InstanceId, request).ConfigureAwait(false);
 
         return new WorkflowStartResult(request.InstanceId);
     }
@@ -42,6 +42,7 @@ internal class WorkflowOrchestrator : IWorkflowOrchestrator
         where TRequest : IWorkflowRequest
         => StartNewAsync<TRequest, Unit>(input);
 
+    // TODO: move to internal
     public async Task OrchestrateAsync(IDurableOrchestrationContext context)
     {
         var workflow = _workflowResolver.GetWorkflow(context.Name);
@@ -59,7 +60,7 @@ internal class WorkflowOrchestrator : IWorkflowOrchestrator
         {
             context.SetCustomStatus(new WorkflowState(workflow.Name, null));
 
-            await workflow.OrchestrateAsync(context, entityId, proxy);
+            await workflow.OrchestrateAsync(context, entityId, proxy).ConfigureAwait(true);
         }
         catch (Exception ex) when (LogException(ex, "Orchestration failed"))
         {
@@ -75,49 +76,3 @@ internal class WorkflowOrchestrator : IWorkflowOrchestrator
         return true;
     }
 }
-
-internal interface IWorkflowResolver
-{
-    IWorkflowWrapper GetWorkflow(string workflowRequestName);
-
-    EntityId GetEntityId(IDurableOrchestrationContext context);
-}
-
-internal class WorkflowResolver : IWorkflowResolver
-{
-    private readonly IServiceProvider _serviceProvider;
-    private readonly Dictionary<string, WorkflowDescriptor> _workflowDescriptors;
-
-    public WorkflowResolver(
-        IServiceProvider serviceProvider,
-        Dictionary<string, WorkflowDescriptor> workflowDescriptors)
-    {
-        _serviceProvider = serviceProvider;
-        _workflowDescriptors = workflowDescriptors;
-    }
-
-    public EntityId GetEntityId(IDurableOrchestrationContext context)
-    {
-        var input = context.GetInput<GenericWorkflowRequest>();
-
-        return new EntityId(nameof(DurableMediatorEntity), input.InstanceId);
-    }
-
-    public IWorkflowWrapper GetWorkflow(string workflowRequestName)
-    {
-        if (!_workflowDescriptors.TryGetValue(workflowRequestName, out var descriptor))
-        {
-            throw new InvalidOperationException($"Cannot find workflow associated with {workflowRequestName}");
-        }
-
-        var workflowType = typeof(IWorkflow<,>).MakeGenericType(descriptor.Request, descriptor.Response);
-        var wrapperType = typeof(WorkflowWrapper<,>).MakeGenericType(descriptor.Request, descriptor.Response);
-
-        var wrapper = Activator.CreateInstance(wrapperType, _serviceProvider.GetService(workflowType))
-            ?? throw new InvalidOperationException("Failed to create workflow wrapper");
-
-        return (IWorkflowWrapper)wrapper;
-    }
-}
-
-internal record WorkflowDescriptor(Type Request, Type Response);

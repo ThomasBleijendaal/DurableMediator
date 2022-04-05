@@ -13,7 +13,8 @@ internal static class BBBWorkflowTrigger
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "bbb")] HttpRequestMessage req,
         [Workflow] IWorkflowOrchestrator orchestrator)
     {
-        var start = await orchestrator.StartNewAsync(new BBBWorkflowRequest(Guid.NewGuid()));
+        // TODO: fix generics
+        var start = await orchestrator.StartNewAsync<BBBWorkflowRequest, BBBWorkflowResponse>(new BBBWorkflowRequest(Guid.NewGuid()));
 
         return new AcceptedResult("", start);
     }

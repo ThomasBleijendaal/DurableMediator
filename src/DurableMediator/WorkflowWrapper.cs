@@ -15,10 +15,21 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
 
     public string Name => _workflow.Name;
 
-    public Task OrchestrateAsync(IDurableOrchestrationContext context, EntityId entityId, IDurableMediator mediator)
+    public async Task OrchestrateAsync(IDurableOrchestrationContext context, EntityId entityId, IDurableMediator mediator)
     {
         var request = context.GetInput<TRequest>();
 
-        return _workflow.OrchestrateAsync(context, request, entityId, mediator);
+        var response = await _workflow.OrchestrateAsync(
+            new WorkflowContext<TRequest>(
+                request, 
+                context,
+                new SubWorkflowOrchestrator(context),
+                entityId, 
+                mediator));
+
+        if (response is TResponse workflowResponse)
+        {
+            context.SetOutput(workflowResponse);
+        }
     }
 }

@@ -22,12 +22,12 @@ internal class WorkflowMonitor : IWorkflowMonitor
     {
         var client = GetClient();
 
-        var status = await client.GetStatusAsync(id);
+        var status = await client.GetStatusAsync(id).ConfigureAwait(false);
 
         return Map(status);
     }
 
-    public async Task<IReadOnlyList<WorkflowStatus>> GetRecentWorkflowsAsync(string instanceIdPrefix)
+    public async Task<IReadOnlyList<WorkflowStatus>> GetRecentWorkflowsAsync(string instanceIdPrefix, CancellationToken token)
     {
         var client = GetClient();
 
@@ -36,12 +36,12 @@ internal class WorkflowMonitor : IWorkflowMonitor
             CreatedTimeFrom = DateTime.UtcNow.AddDays(-7),
             InstanceIdPrefix = instanceIdPrefix
 
-        }, CancellationToken.None);
+        }, token).ConfigureAwait(false);
 
         return result.DurableOrchestrationState.Select(Map).ToList();
     }
 
-    public async Task<bool> HasRunningTaskAsync(string instanceIdPrefix)
+    public async Task<bool> HasRunningTaskAsync(string instanceIdPrefix, CancellationToken token)
     {
         var client = GetClient();
 
@@ -53,7 +53,7 @@ internal class WorkflowMonitor : IWorkflowMonitor
                     OrchestrationRuntimeStatus.Pending,
                     OrchestrationRuntimeStatus.Running
                 }
-        }, CancellationToken.None);
+        }, token).ConfigureAwait(false);
 
         return result.DurableOrchestrationState.Any();
     }
@@ -67,11 +67,13 @@ internal class WorkflowMonitor : IWorkflowMonitor
         return new WorkflowStatus(
             state?.WorkflowName ?? status.InstanceId,
             status.InstanceId,
-            Map(status?.RuntimeStatus),
+            Map(status.RuntimeStatus),
+            status.CreatedTime,
+            status.LastUpdatedTime,
             state?.ExceptionMessage);
     }
 
-    private WorkflowRuntimeStatus Map(OrchestrationRuntimeStatus? status)
+    private WorkflowRuntimeStatus Map(OrchestrationRuntimeStatus status)
         => status switch
         {
             OrchestrationRuntimeStatus.Unknown => WorkflowRuntimeStatus.Unknown,
