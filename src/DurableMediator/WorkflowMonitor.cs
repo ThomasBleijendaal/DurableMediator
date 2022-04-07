@@ -50,7 +50,6 @@ internal class WorkflowMonitor : IWorkflowMonitor
         var day = new List<DurableOrchestrationStatus>();
         do
         {
-
             var result = await client.ListInstancesAsync(new OrchestrationStatusQueryCondition
             {
                 CreatedTimeFrom = createdTimeFrom,

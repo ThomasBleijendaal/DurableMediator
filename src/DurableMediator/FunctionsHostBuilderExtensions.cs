@@ -27,7 +27,6 @@ public static class FunctionsHostBuilderExtensions
         AddWorkflowClasses(builder.Services, handlerAssemblyMarkerTypes.Select(x => x.GetTypeInfo().Assembly));
     }
 
-    // TODO: expand this method to better search like MediatR
     private static void AddWorkflowClasses(IServiceCollection service, IEnumerable<Assembly> assembliesToScan)
     {
         var filteredClasses = assembliesToScan.SelectMany(x => x.DefinedTypes)
