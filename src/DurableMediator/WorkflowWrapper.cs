@@ -17,11 +17,11 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
 
     public async Task OrchestrateAsync(IDurableOrchestrationContext context, EntityId entityId, IDurableMediator mediator)
     {
-        var request = context.GetInput<GenericWorkflowRequest>();
+        var request = context.GetInput<TRequest>();
 
         var response = await _workflow.OrchestrateAsync(
             new WorkflowContext<TRequest>(
-                request.GetRequest<TRequest>(), 
+                request, 
                 context,
                 new SubWorkflowOrchestrator(context),
                 entityId, 

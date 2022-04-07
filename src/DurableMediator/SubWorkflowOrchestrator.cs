@@ -13,8 +13,8 @@ internal class SubWorkflowOrchestrator : ISubWorkflowOrchestrator
     }
 
     public Task<TWorkflowResponse?> CallSubWorkflowAsync<TWorkflowResponse>(IWorkflowRequest<TWorkflowResponse> request)
-        => _context.CallSubOrchestratorAsync<TWorkflowResponse?>(request.GetType().Name, request.InstanceId, request);
+        => _context.CallSubOrchestratorAsync<TWorkflowResponse?>(request.GetType().Name, WorkflowInstanceIdHelper.GetId(request), request);
 
     public void StartWorkflow(IWorkflowRequest request)
-        => _context.StartNewOrchestration(request.GetType().Name, request, request.InstanceId);
+        => _context.StartNewOrchestration(request.GetType().Name, request, WorkflowInstanceIdHelper.GetId(request));
 }

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using WorkflowFunctionApp.Workflows;
 
 namespace WorkflowFunctionApp;
 
@@ -13,24 +12,25 @@ internal static class WorkflowMonitor
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "monitor")] HttpRequestMessage req,
         [Workflow] IWorkflowMonitor monitor)
     {
-        var runningWorkflows = await monitor.GetRecentWorkflowsAsync("", CancellationToken.None);
+        var runningWorkflows = await monitor.GetRecentWorkflowsAsync("", CancellationToken.None).ToListAsync(100);
 
-        return new OkObjectResult(runningWorkflows.OrderByDescending(x => x.CreateTime));
+        return new OkObjectResult(runningWorkflows);
     }
-}
 
-internal static class WorkflowResult
-{ 
-    [FunctionName(nameof(WorkflowResult))]
-    public static async Task<IActionResult> ResultAsync(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "result/{instanceId}")] HttpRequestMessage req,
-        [Workflow] IWorkflowMonitor monitor,
-        string instanceId)
+    private static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> enumerable, int count)
     {
-        var response = await monitor.GetWorkflowResultAsync<BBBWorkflowRequest, BBBWorkflowResponse>(instanceId);
+        var list = new List<T>();
 
-        return response == null 
-            ? new NotFoundResult()
-            : new OkObjectResult(response);
+        await foreach (var item in enumerable)
+        {
+            list.Add(item);
+
+            if (list.Count >= count)
+            {
+                break;
+            }
+        }
+
+        return list;
     }
 }

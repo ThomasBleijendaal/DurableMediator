@@ -7,7 +7,7 @@ public interface IWorkflowMonitor
     Task<TResult?> GetWorkflowResultAsync<TRequest, TResult>(string instanceId)
         where TRequest : IWorkflowRequest<TResult>;
 
-    Task<IReadOnlyList<WorkflowStatus>> GetRecentWorkflowsAsync(string instanceIdPrefix, CancellationToken token);
+    IAsyncEnumerable<WorkflowStatus> GetRecentWorkflowsAsync(string instanceIdPrefix, CancellationToken token);
 
     Task<bool> HasRunningTaskAsync(string instanceIdPrefix, CancellationToken token);
 }
