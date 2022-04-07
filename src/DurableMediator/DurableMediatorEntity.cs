@@ -27,7 +27,7 @@ internal class DurableMediatorEntity : IDurableMediator
         }
         catch (InvalidOperationException ex)
         {
-            throw new Exception("DurableMediator should be included in the <InternalsVisibleTo> so it can reference the internal classes", ex);
+            throw new InvalidOperationException("DurableMediator should be included in the <InternalsVisibleTo> so it can reference the internal classes", ex);
         }
     }
 }

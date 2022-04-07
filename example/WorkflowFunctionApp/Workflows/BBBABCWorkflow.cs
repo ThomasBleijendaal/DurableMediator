@@ -7,7 +7,7 @@ namespace WorkflowFunctionApp.Workflows;
 
 internal record BBBABCWorkflow(ILogger<BBBABCWorkflow> Logger) : IWorkflow<BBBABCWorkflowRequest, Unit>
 {
-    public string Name => "ABCBBB";
+    public string Name => "BBBABC";
 
     public async Task<Unit> OrchestrateAsync(WorkflowContext<BBBABCWorkflowRequest> context)
     {
