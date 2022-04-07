@@ -17,6 +17,8 @@ internal class WorkflowResolver : IWorkflowResolver
 
     public EntityId GetEntityId(IDurableOrchestrationContext context)
     {
+        var goodEnough = context.InstanceId;
+
         var input = context.GetInput<GenericWorkflowRequest>();
 
         return new EntityId(nameof(DurableMediatorEntity), input.InstanceId);

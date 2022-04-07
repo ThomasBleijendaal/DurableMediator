@@ -2,6 +2,7 @@
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.ContextImplementations;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 
 namespace DurableMediator;
 
@@ -22,7 +23,7 @@ internal class WorkflowStarter : IWorkflowStarter
     {
         var client = _durableClientFactory.CreateClient(new DurableClientOptions { TaskHub = _config.HubName });
 
-        var request = new GenericWorkflowRequest(input.InstanceId, input);
+        var request = new GenericWorkflowRequest(input.InstanceId, JObject.FromObject(input));
 
         await client.StartNewAsync(input.GetType().Name, request.InstanceId, request).ConfigureAwait(false);
 

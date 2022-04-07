@@ -3,7 +3,7 @@
 namespace DurableMediator;
 
 internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
-    where TRequest : IWorkflowRequest<TResponse>
+    where TRequest : class, IWorkflowRequest<TResponse>
 {
     private readonly IWorkflow<TRequest, TResponse> _workflow;
 
@@ -17,11 +17,11 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
 
     public async Task OrchestrateAsync(IDurableOrchestrationContext context, EntityId entityId, IDurableMediator mediator)
     {
-        var request = context.GetInput<TRequest>();
+        var request = context.GetInput<GenericWorkflowRequest>();
 
         var response = await _workflow.OrchestrateAsync(
             new WorkflowContext<TRequest>(
-                request, 
+                request.GetRequest<TRequest>(), 
                 context,
                 new SubWorkflowOrchestrator(context),
                 entityId, 

@@ -1,7 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using Newtonsoft.Json.Linq;
 
 namespace DurableMediator;
 
 internal record GenericWorkflowRequest(
     string InstanceId,
-    [JsonProperty(ItemTypeNameHandling = TypeNameHandling.All)] object Request) : IWorkflowRequest;
+    JObject Request) : IWorkflowRequest
+{
+    public TRequest GetRequest<TRequest>()
+        where TRequest : class
+        => Request.ToObject<TRequest>() ?? throw new InvalidOperationException("Cannot restore workflow input");
+}

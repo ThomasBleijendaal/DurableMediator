@@ -18,13 +18,23 @@ internal class WorkflowMonitor : IWorkflowMonitor
         _durableClientFactory = durableClientFactory;
     }
 
-    public async Task<WorkflowStatus> GetWorkflowAsync(string id)
+    public async Task<WorkflowStatus?> GetWorkflowAsync(string instanceId)
     {
-        var client = GetClient();
-
-        var status = await client.GetStatusAsync(id).ConfigureAwait(false);
+        var status = await GetOrchestrationStatusAsync(instanceId).ConfigureAwait(false);
 
         return Map(status);
+    }
+
+    public async Task<TResult?> GetWorkflowResultAsync<TRequest, TResult>(string instanceId)
+        where TRequest : IWorkflowRequest<TResult>
+    {
+        var status = await GetOrchestrationStatusAsync(instanceId).ConfigureAwait(false);
+        if (status == null)
+        {
+            return default;
+        }
+
+        return status.Output.ToObject<TResult>();
     }
 
     public async Task<IReadOnlyList<WorkflowStatus>> GetRecentWorkflowsAsync(string instanceIdPrefix, CancellationToken token)
@@ -61,8 +71,16 @@ internal class WorkflowMonitor : IWorkflowMonitor
     private IDurableClient GetClient()
         => _durableClientFactory.CreateClient(new DurableClientOptions { TaskHub = _config.HubName });
 
-    private WorkflowStatus Map(DurableOrchestrationStatus status)
+    private async Task<DurableOrchestrationStatus?> GetOrchestrationStatusAsync(string instanceId) 
+        => await GetClient().GetStatusAsync(instanceId).ConfigureAwait(false);
+
+    private WorkflowStatus? Map(DurableOrchestrationStatus? status)
     {
+        if (status == null)
+        {
+            return null;
+        }
+
         var state = status.CustomStatus.ToObject<WorkflowState>();
         return new WorkflowStatus(
             state?.WorkflowName ?? status.InstanceId,
