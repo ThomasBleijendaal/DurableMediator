@@ -4,8 +4,8 @@ public interface IWorkflowMonitor
 {
     Task<WorkflowStatus?> GetWorkflowAsync(string instanceId);
 
-    Task<TResult?> GetWorkflowResultAsync<TRequest, TResult>(string instanceId)
-        where TRequest : IWorkflowRequest<TResult>;
+    Task<(TRequest request, TResponse? response)> GetWorkflowDataAsync<TRequest, TResponse>(string instanceId)
+        where TRequest : IWorkflowRequest<TResponse>;
 
     IAsyncEnumerable<WorkflowStatus> GetRecentWorkflowsAsync(string instanceIdPrefix, CancellationToken token);
 
