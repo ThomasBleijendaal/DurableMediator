@@ -22,7 +22,7 @@ jobs:
       with:
         nuget-api-key: ${{ secrets.NUGET_APIKEY }}
         nuget-version: '5.x'
-    - name: Build Api Core
+    - name: Build Library
       run: dotnet build -p:PackageVersion=${{steps.tag.outputs.tag}} --configuration Release ./src/DurableMediator/DurableMediator.csproj
-    - name: Publish Api Core
+    - name: Publish Library
       run: dotnet nuget push .\src\DurableMediator\bin\Release\*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
