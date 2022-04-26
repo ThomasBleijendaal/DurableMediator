@@ -19,9 +19,16 @@ internal class WorkflowMonitor : IWorkflowMonitor
         _durableClientFactory = durableClientFactory;
     }
 
+    public async Task<WorkflowStatus<TRequest>?> GetWorkflowAsync<TRequest>(string instanceId)
+    {
+        var status = await GetOrchestrationStatusAsync<TRequest>(instanceId).ConfigureAwait(false);
+
+        return Map<TRequest>(status);
+    }
+
     public async Task<WorkflowStatus<TRequest, TResponse>?> GetWorkflowAsync<TRequest, TResponse>(string instanceId)
     {
-        var status = await GetOrchestrationStatusAsync(instanceId).ConfigureAwait(false);
+        var status = await GetOrchestrationStatusAsync<TRequest>(instanceId).ConfigureAwait(false);
 
         return Map<TRequest, TResponse>(status);
     }
@@ -99,11 +106,8 @@ internal class WorkflowMonitor : IWorkflowMonitor
     private IDurableClient GetClient()
         => _durableClientFactory.CreateClient(new DurableClientOptions { TaskHub = _config.HubName });
 
-    private bool IsInvocationOfType<TRequest>(DurableOrchestrationStatus status)
+    private static bool IsInvocationOfType<TRequest>(DurableOrchestrationStatus status)
         => status.Name == typeof(TRequest).Name;
-
-    private async Task<DurableOrchestrationStatus?> GetOrchestrationStatusAsync(string instanceId)
-        => await GetClient().GetStatusAsync(Constants.WorkflowIdPrefix + instanceId).ConfigureAwait(false);
 
     private async Task<DurableOrchestrationStatus?> GetOrchestrationStatusAsync<TRequest>(string instanceId)
     {
