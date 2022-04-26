@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
+    
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MediatR" Version="10.0.1" />
@@ -17,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\DurableMediator\DurableMediator.csproj" />
   </ItemGroup>
+  
   <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

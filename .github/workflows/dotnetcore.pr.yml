@@ -1,0 +1,19 @@
+name: .NET Core PR
+
+on: 
+    pull_request:
+        branches:
+        - main
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+    - name: Build Library
+      run: dotnet build --configuration Release ./src/DurableMediator/DurableMediator.csproj

@@ -2,7 +2,7 @@
 
 namespace WorkflowFunctionApp.Workflows;
 
-internal record BBBABCWorkflowRequest(Guid Id) : IWorkflowRequest
+internal record BBBABCWorkflowRequest(Guid BbbAbcId) : IWorkflowRequest
 {
-    public string InstanceId => $"bbbabc-{Id}";
+    public string InstanceId => $"bbbabc-{BbbAbcId}";
 }

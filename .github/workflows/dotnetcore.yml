@@ -1,0 +1,28 @@
+name: .NET Core
+
+on: 
+    push:
+        tags:
+        - '*.*.*'
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Get tag
+      id: tag
+      uses: dawidd6/action-get-tag@v1
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+    - uses: nuget/setup-nuget@v1
+      with:
+        nuget-api-key: ${{ secrets.NUGET_APIKEY }}
+        nuget-version: '5.x'
+    - name: Build Library
+      run: dotnet build -p:PackageVersion=${{steps.tag.outputs.tag}} --configuration Release ./src/DurableMediator/DurableMediator.csproj
+    - name: Publish Library
+      run: dotnet nuget push .\src\DurableMediator\bin\Release\*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
