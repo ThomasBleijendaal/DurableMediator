@@ -11,6 +11,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/ThomasBleijendaal/DurableMediator</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageTags>Durable Mediator, MediatR, Durable Task, Activity, Activities, Orchestration, Orchestrations, Azure, Azure Functions, Function, Functions</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -34,6 +35,7 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
