@@ -16,7 +16,7 @@ internal record ABCWorkflow(ILogger<ABCWorkflow> Logger) : IWorkflow<ABCWorkflow
 
         logger.LogInformation("Start with workflow");
 
-        var stepAResponse = await context.DurableMediator.SendAsync(new RequestA(context.Request.Id));
+        var stepAResponse = await context.DurableMediator.SendAsync(new RequestA(context.Request.AbcId));
 
         logger.LogInformation("Response from Step A was {response}", stepAResponse);
 
@@ -25,7 +25,7 @@ internal record ABCWorkflow(ILogger<ABCWorkflow> Logger) : IWorkflow<ABCWorkflow
             await context.TryAsync(
                 async () =>
                 {
-                    var stepBResponse = await context.DurableMediator.SendAsync(new RequestB(context.Request.Id));
+                    var stepBResponse = await context.DurableMediator.SendAsync(new RequestB(context.Request.AbcId));
 
                     logger.LogInformation("Step B was {success}", stepBResponse.Success ? "successful" : "not successful");
 

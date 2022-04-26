@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using WorkflowFunctionApp.Workflows;
 
 namespace WorkflowFunctionApp;
 
@@ -12,9 +13,9 @@ internal static class WorkflowMonitor
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "monitor")] HttpRequestMessage req,
         [Workflow] IWorkflowMonitor monitor)
     {
-        var runningWorkflows = await monitor.GetRecentWorkflowsAsync("", CancellationToken.None).ToListAsync(100);
+        var recentWorkflow = await monitor.GetRecentWorkflowsAsync<BBBWorkflowRequest, BBBWorkflowResponse>("", CancellationToken.None).ToListAsync(100);
 
-        return new OkObjectResult(runningWorkflows);
+        return new OkObjectResult(recentWorkflow);
     }
 
     private static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> enumerable, int count)

@@ -15,7 +15,7 @@ internal record BBBABCWorkflow(ILogger<BBBABCWorkflow> Logger) : IWorkflow<BBBAB
 
         logger.LogInformation("Start with workflow");
 
-        var bbbResult = await context.SubOrchestrator.CallSubWorkflowAsync(new BBBWorkflowRequest(context.Request.Id));
+        var bbbResult = await context.SubOrchestrator.CallSubWorkflowAsync(new BBBWorkflowRequest(context.Request.BbbAbcId));
         if (bbbResult == null)
         {
             logger.LogInformation("BBB workflow returned null");
@@ -23,11 +23,11 @@ internal record BBBABCWorkflow(ILogger<BBBABCWorkflow> Logger) : IWorkflow<BBBAB
             return Unit.Value;
         }
 
-        logger.LogInformation("BBB workflow returned {id}", bbbResult.Id);
+        logger.LogInformation("BBB workflow returned {id}", bbbResult.BbbId);
 
         logger.LogInformation("Triggering ABC");
 
-        context.SubOrchestrator.StartWorkflow(new ABCWorkflowRequest(bbbResult.Id));
+        context.SubOrchestrator.StartWorkflow(new ABCWorkflowRequest(bbbResult.BbbId));
 
         logger.LogInformation("Workflow done - not waiting on ABC");
 

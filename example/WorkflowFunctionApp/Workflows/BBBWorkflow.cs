@@ -15,7 +15,7 @@ internal record BBBWorkflow(ILogger<BBBWorkflow> Logger) : IWorkflow<BBBWorkflow
 
         logger.LogInformation("Start with workflow");
 
-        var step1 = await context.DurableMediator.SendAsync(new RequestB(context.Request.Id));
+        var step1 = await context.DurableMediator.SendAsync(new RequestB(context.Request.BbbId));
 
         var step2 = await context.DurableMediator.SendAsync(new RequestB(step1.Id));
 

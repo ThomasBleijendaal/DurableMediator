@@ -1,3 +1,3 @@
 ﻿namespace WorkflowFunctionApp.Workflows;
 
-internal record BBBWorkflowResponse(Guid Id);
+internal record BBBWorkflowResponse(Guid BbbId);

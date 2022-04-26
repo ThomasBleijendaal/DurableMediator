@@ -14,7 +14,7 @@
   },
   "extensions": {
     "durableTask": {
-      "hubName": "WorkflowHub"
+      "hubName": "DurableWorkflowHub"
     },
     "http": {
       "routePrefix": ""
