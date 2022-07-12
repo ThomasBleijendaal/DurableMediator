@@ -31,13 +31,11 @@ internal class WorkflowOrchestrator : IWorkflowOrchestrator
 
         try
         {
-            context.SetCustomStatus(new WorkflowState(workflow.Name, null));
-
             await workflow.OrchestrateAsync(context, entityId, proxy).ConfigureAwait(true);
         }
         catch (Exception ex) when (LogException(ex, "Orchestration failed"))
         {
-            context.SetCustomStatus(new WorkflowState(workflow.Name, ex.Message));
+            context.SetCustomStatus(new WorkflowErrorState(ex.Message));
 
             throw;
         }

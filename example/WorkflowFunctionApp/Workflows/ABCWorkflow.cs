@@ -8,8 +8,6 @@ namespace WorkflowFunctionApp.Workflows;
 
 internal record ABCWorkflow(ILogger<ABCWorkflow> Logger) : IWorkflow<ABCWorkflowRequest, Unit>
 {
-    public string Name => "ABC";
-
     public async Task<Unit> OrchestrateAsync(WorkflowContext<ABCWorkflowRequest> context)
     {
         var logger = context.OrchestrationContext.CreateReplaySafeLogger(Logger);

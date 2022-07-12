@@ -14,7 +14,8 @@
   },
   "extensions": {
     "durableTask": {
-      "hubName": "DurableWorkflowHub"
+      "hubName": "DurableWorkflowHub",
+      "useGracefulShutdown": true
     },
     "http": {
       "routePrefix": ""

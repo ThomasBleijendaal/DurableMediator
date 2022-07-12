@@ -14,7 +14,6 @@ internal static class WorkflowResult
         [Workflow] IWorkflowMonitor monitor,
         string instanceId)
     {
-        var request2 = await monitor.GetWorkflowDataAsync<ABCWorkflowRequest>(instanceId);
         var (request, response) = await monitor.GetWorkflowDataAsync<BBBWorkflowRequest, BBBWorkflowResponse>(instanceId);
 
         return new OkObjectResult(new { Request = request, Response = response });

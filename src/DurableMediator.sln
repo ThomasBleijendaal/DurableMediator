@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DurableMediator", "DurableMediator\DurableMediator.csproj", "{C3FA4C74-1DD1-4E0A-A579-D442A88BCC49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkflowFunctionApp", "..\example\WorkflowFunctionApp\WorkflowFunctionApp.csproj", "{B5C137EE-0044-4FE3-9997-9CDD57CBB40F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkflowFunctionApp", "..\example\WorkflowFunctionApp\WorkflowFunctionApp.csproj", "{B5C137EE-0044-4FE3-9997-9CDD57CBB40F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

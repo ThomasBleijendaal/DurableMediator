@@ -20,6 +20,7 @@ internal class WorkflowMonitor : IWorkflowMonitor
     }
 
     public async Task<WorkflowStatus<TRequest>?> GetWorkflowAsync<TRequest>(string instanceId)
+        where TRequest : IWorkflowRequest
     {
         var status = await GetOrchestrationStatusAsync<TRequest>(instanceId).ConfigureAwait(false);
 
@@ -27,6 +28,7 @@ internal class WorkflowMonitor : IWorkflowMonitor
     }
 
     public async Task<WorkflowStatus<TRequest, TResponse>?> GetWorkflowAsync<TRequest, TResponse>(string instanceId)
+        where TRequest : IWorkflowRequest<TResponse>
     {
         var status = await GetOrchestrationStatusAsync<TRequest>(instanceId).ConfigureAwait(false);
 
@@ -65,6 +67,7 @@ internal class WorkflowMonitor : IWorkflowMonitor
     }
 
     public async IAsyncEnumerable<WorkflowStatus<TRequest>> GetRecentWorkflowsAsync<TRequest>(string instanceIdPrefix, [EnumeratorCancellation] CancellationToken token)
+        where TRequest : IWorkflowRequest
     {
         await foreach (var item in GetWorkflowStatusAsync<TRequest>(instanceIdPrefix, token).ConfigureAwait(false))
         {
@@ -76,6 +79,7 @@ internal class WorkflowMonitor : IWorkflowMonitor
     }
 
     public async IAsyncEnumerable<WorkflowStatus<TRequest, TResponse>> GetRecentWorkflowsAsync<TRequest, TResponse>(string instanceIdPrefix, [EnumeratorCancellation] CancellationToken token)
+        where TRequest : IWorkflowRequest<TResponse>
     {
         await foreach (var item in GetWorkflowStatusAsync<TRequest>(instanceIdPrefix, token).ConfigureAwait(false))
         {
@@ -162,19 +166,20 @@ internal class WorkflowMonitor : IWorkflowMonitor
         while (createdTimeFrom > maxTimeFrom && !token.IsCancellationRequested);
     }
 
-    private WorkflowStatus<TRequest>? Map<TRequest>(DurableOrchestrationStatus? status)
+    private static WorkflowStatus<TRequest>? Map<TRequest>(DurableOrchestrationStatus? status)
+        where TRequest : IWorkflowRequest
     {
         if (status == null)
         {
             return null;
         }
 
-        var state = status.CustomStatus.ToObject<WorkflowState>();
+        var state = status.CustomStatus.ToObject<WorkflowErrorState>();
 
         var input = status.Input.ToObject<TRequest>();
 
         return new WorkflowStatus<TRequest>(
-            state?.WorkflowName ?? status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
+            input.WorkflowName,
             status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
             Map(status.RuntimeStatus),
             input,
@@ -183,20 +188,21 @@ internal class WorkflowMonitor : IWorkflowMonitor
             state?.ExceptionMessage);
     }
 
-    private WorkflowStatus<TRequest, TResponse>? Map<TRequest, TResponse>(DurableOrchestrationStatus? status)
+    private static WorkflowStatus<TRequest, TResponse>? Map<TRequest, TResponse>(DurableOrchestrationStatus? status)
+        where TRequest : IWorkflowRequest<TResponse>
     {
         if (status == null)
         {
             return null;
         }
 
-        var state = status.CustomStatus.ToObject<WorkflowState>();
+        var state = status.CustomStatus.ToObject<WorkflowErrorState>();
 
         var input = status.Input.ToObject<TRequest>();
         var output = status.Output == null ? default : status.Output.ToObject<TResponse>();
 
         return new WorkflowStatus<TRequest, TResponse>(
-            state?.WorkflowName ?? status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
+            input.WorkflowName,
             status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
             Map(status.RuntimeStatus),
             input,
@@ -206,7 +212,7 @@ internal class WorkflowMonitor : IWorkflowMonitor
             state?.ExceptionMessage);
     }
 
-    private WorkflowRuntimeStatus Map(OrchestrationRuntimeStatus status)
+    private static WorkflowRuntimeStatus Map(OrchestrationRuntimeStatus status)
         => status switch
         {
             OrchestrationRuntimeStatus.Unknown => WorkflowRuntimeStatus.Unknown,

@@ -7,8 +7,6 @@ namespace WorkflowFunctionApp.Workflows;
 
 internal record BBBWorkflow(ILogger<BBBWorkflow> Logger) : IWorkflow<BBBWorkflowRequest, BBBWorkflowResponse>
 {
-    public string Name => "BBB";
-
     public async Task<BBBWorkflowResponse> OrchestrateAsync(WorkflowContext<BBBWorkflowRequest> context)
     {
         var logger = context.OrchestrationContext.CreateReplaySafeLogger(Logger);
