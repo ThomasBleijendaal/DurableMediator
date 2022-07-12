@@ -14,7 +14,9 @@ internal class WorkflowBinding : IExtensionConfigProvider
         BindToInput<WorkflowOrchestrator>(rule);
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete - going to consume it anyway
     private static void BindToInput<TService>(FluentBindingRule<WorkflowAttribute> rule)
+#pragma warning restore CS0618 // Type or member is obsolete - going to consume it anyway
         => rule.BindToInput((attr, context) =>
         {
             var service = context.FunctionContext.CreateObjectInstance<TService>();

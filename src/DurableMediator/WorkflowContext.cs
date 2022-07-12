@@ -15,6 +15,7 @@ public record WorkflowContext<TRequest>(
     /// If the action is not successful after maxRetries, OrchestrationRetryException is thrown;
     /// </summary>
     /// <param name="action"></param>
+    /// <param name="token"></param>
     /// <param name="maxRetries"></param>
     /// <param name="millisecondsBetweenAttempt"></param>
     /// <returns></returns>
