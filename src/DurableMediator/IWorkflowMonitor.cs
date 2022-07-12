@@ -11,7 +11,8 @@ public interface IWorkflowMonitor
     /// <typeparam name="TRequest"></typeparam>
     /// <param name="instanceId"></param>
     /// <returns></returns>
-    Task<WorkflowStatus<TRequest>?> GetWorkflowAsync<TRequest>(string instanceId);
+    Task<WorkflowStatus<TRequest>?> GetWorkflowAsync<TRequest>(string instanceId)
+        where TRequest : IWorkflowRequest;
 
     /// <summary>
     /// Gets the status of the workflow with the given instanceId.
@@ -20,7 +21,8 @@ public interface IWorkflowMonitor
     /// <typeparam name="TResponse"></typeparam>
     /// <param name="instanceId"></param>
     /// <returns></returns>
-    Task<WorkflowStatus<TRequest, TResponse>?> GetWorkflowAsync<TRequest, TResponse>(string instanceId);
+    Task<WorkflowStatus<TRequest, TResponse>?> GetWorkflowAsync<TRequest, TResponse>(string instanceId)
+        where TRequest : IWorkflowRequest<TResponse>;
 
     /// <summary>
     /// Gets the request data of the workflow with the given instanceId.
@@ -48,7 +50,8 @@ public interface IWorkflowMonitor
     /// <param name="instanceIdPrefix"></param>
     /// <param name="token"></param>
     /// <returns></returns>
-    IAsyncEnumerable<WorkflowStatus<TRequest>> GetRecentWorkflowsAsync<TRequest>(string instanceIdPrefix, CancellationToken token);
+    IAsyncEnumerable<WorkflowStatus<TRequest>> GetRecentWorkflowsAsync<TRequest>(string instanceIdPrefix, CancellationToken token)
+        where TRequest : IWorkflowRequest;
 
     /// <summary>
     /// Gets the request and response data of recent workflows.
@@ -58,7 +61,8 @@ public interface IWorkflowMonitor
     /// <param name="instanceIdPrefix"></param>
     /// <param name="token"></param>
     /// <returns></returns>
-    IAsyncEnumerable<WorkflowStatus<TRequest, TResponse>> GetRecentWorkflowsAsync<TRequest, TResponse>(string instanceIdPrefix, CancellationToken token);
+    IAsyncEnumerable<WorkflowStatus<TRequest, TResponse>> GetRecentWorkflowsAsync<TRequest, TResponse>(string instanceIdPrefix, CancellationToken token)
+        where TRequest : IWorkflowRequest<TResponse>;
 
     /// <summary>
     /// Checks whether workflows are active for the given instanceIdPrefix.

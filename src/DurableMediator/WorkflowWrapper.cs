@@ -13,8 +13,6 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
         _workflow = workflow ?? throw new ArgumentNullException(nameof(workflow), $"Workflow of type IWorkflow<{typeof(TRequest).Name}, {typeof(TResponse)}> not found");
     }
 
-    public string Name => _workflow.Name;
-
     public async Task OrchestrateAsync(IDurableOrchestrationContext context, EntityId entityId, IDurableMediator mediator)
     {
         var request = context.GetInput<TRequest>();
