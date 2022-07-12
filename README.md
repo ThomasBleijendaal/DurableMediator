@@ -11,7 +11,11 @@ To get started with running orchestrations which call MediatR Requests as activi
 First start by defining a workflow request:
 
 ```c#
-public record WorkflowRequest(Guid SomeId) : IWorkflowRequest;
+public record WorkflowRequest(Guid SomeId) : IWorkflowRequest
+{
+    public string WorkflowName => "Human readable workflow name";
+    public string InstanceId => SomeId.ToString();
+};
 ```
 
 Also, create a `IRequest` that needs to be called from the workflow:
@@ -53,8 +57,6 @@ public class ExampleWorkflow : IWorkflow<WorkflowRequest, Unit>
     {
         _logger = logger;
     }
-
-    public string Name => "Human readable workflow name";
 
     public async Task<Unit> OrchestrateAsync(WorkflowContext<WorkflowRequest> context)
     {
