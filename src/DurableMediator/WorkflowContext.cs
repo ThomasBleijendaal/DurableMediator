@@ -7,7 +7,7 @@ public record WorkflowContext<TRequest>(
     IDurableOrchestrationContext OrchestrationContext,
     ISubWorkflowOrchestrator SubOrchestrator,
     EntityId EntityId,
-    IDurableMediator DurableMediator)
+    IDurableMediator DurableMediator) : IWorkflowContext
 {
     /// <summary>
     /// Tries the given action for maxRetries times. When action returns true the action is assumed successful and the Task completes.
@@ -37,11 +37,19 @@ public record WorkflowContext<TRequest>(
             }
 
             await OrchestrationContext.CreateTimer(
-                DateTime.UtcNow.AddMilliseconds(millisecondsBetweenAttempt * attempt), 
+                DateTime.UtcNow.AddMilliseconds(millisecondsBetweenAttempt * attempt),
                 token);
         }
         while (attempt < maxRetries);
 
         throw new OrchestrationRetryException();
     }
+}
+
+public interface IWorkflowContext
+{
+    IDurableOrchestrationContext OrchestrationContext { get; }
+    ISubWorkflowOrchestrator SubOrchestrator { get; }
+    EntityId EntityId { get; }
+    IDurableMediator DurableMediator { get; }
 }

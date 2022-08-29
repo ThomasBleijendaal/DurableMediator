@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
 namespace DurableMediator;
 
