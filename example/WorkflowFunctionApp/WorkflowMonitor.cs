@@ -13,7 +13,7 @@ internal static class WorkflowMonitor
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "monitor")] HttpRequestMessage req,
         [Workflow] IWorkflowMonitor monitor)
     {
-        var recentWorkflow = await monitor.GetRecentWorkflowsAsync<BBBWorkflowRequest, BBBWorkflowResponse>("", CancellationToken.None).ToListAsync(100);
+        var recentWorkflow = await monitor.GetRecentWorkflowsAsync("", CancellationToken.None).ToListAsync(100);
 
         return new OkObjectResult(recentWorkflow);
     }

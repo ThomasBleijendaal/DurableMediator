@@ -18,10 +18,9 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
         var request = context.GetInput<TRequest>();
 
         var response = await _workflow.OrchestrateAsync(
-            new WorkflowContext<TRequest>(
+            new WorkflowExecution<TRequest>(
                 request, 
                 context,
-                new SubWorkflowOrchestrator(context),
                 entityId, 
                 mediator));
 

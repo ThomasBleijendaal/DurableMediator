@@ -58,13 +58,13 @@ public class ExampleWorkflow : IWorkflow<WorkflowRequest, Unit>
         _logger = logger;
     }
 
-    public async Task<Unit> OrchestrateAsync(WorkflowContext<WorkflowRequest> context)
+    public async Task<Unit> OrchestrateAsync(WorkflowExecution<WorkflowRequest> execution)
     {
-        var logger = context.OrchestrationContext.CreateReplaySafeLogger(_logger);
+        var logger = execution.OrchestrationContext.CreateReplaySafeLogger(_logger);
 
         logger.LogInformation("Start with workflow");
 
-        await context.DurableMediator.SendAsync(new MediatorRequest(context.Request.SomeId));
+        await execution.ExecuteAsync(new MediatorRequest(execution.Request.SomeId));
 
         logger.LogInformation("Workflow done");
 
@@ -92,9 +92,17 @@ public static class WorkflowTrigger
 
 In your function app startup, add the required services by including `builder.AddDurableMediator(typeof(Startup));`.
 
-When running your function app you will see that next to the WorkflowTrigger Http Trigger function, an Orchestration Trigger function called "WorkflowRequest" and a "DurableMediatorEntity" Entity Trigger function are added. When http function triggers the start of the workflow, the orchestration function will orchestrate the workflow and invoke `ExampleWorkflow`. Each call to the `context.DurableMediator` will trigger the DurableMediatorEntity to execute the MediatR Request in a separate activity after which the orchestration resumes. No more calling `context.CallActivity` and guessing what parameters to pass in.
+When running your function app you will see that next to the WorkflowTrigger Http Trigger function, an 
+Orchestration Trigger function called "WorkflowRequest" and a "DurableMediatorEntity" Entity Trigger 
+function are added. When http function triggers the start of the workflow, the orchestration function 
+will orchestrate the workflow and invoke `ExampleWorkflow`. Each call to the `execution.ExecuteAsync` 
+will trigger the DurableMediatorEntity to execute the MediatR Request in a separate activity after which 
+the orchestration resumes. No more calling `context.CallActivity` and guessing what parameters to pass in.
 
-The `context` exposes the `IDurableOrchestrationContext` from the Durable Task library, giving full access to creating timers for durable delays, locking entities for critical sections, or wait for external events. The `context` also exposes a `ISubWorkflowOrchestrator`, which allows workflows to initiate other workflows, and even await their responses, making it easy to compose workflows. 
+The `execution` exposes the `IDurableOrchestrationContext` from the Durable Task library, giving full access 
+to creating timers for durable delays, locking entities for critical sections, or wait for external events. 
+The `execution` also exposes methods from `ISubWorkflowOrchestrator`, which allows workflows to initiate other workflows,
+and even await their responses, making it easy to compose workflows. 
 
 ## Examples
 

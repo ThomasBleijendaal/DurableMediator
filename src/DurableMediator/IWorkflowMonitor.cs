@@ -1,10 +1,19 @@
-﻿namespace DurableMediator;
+﻿using Newtonsoft.Json.Linq;
+
+namespace DurableMediator;
 
 /// <summary>
 /// Gets details of recently executed workflows 
 /// </summary>
 public interface IWorkflowMonitor
 {
+    /// <summary>
+    /// Gets the status of the workflow with the given instanceId.
+    /// </summary>
+    /// <param name="instanceId"></param>
+    /// <returns></returns>
+    Task<WorkflowStatus<JToken, JToken?>?> GetWorkflowAsync(string instanceId);
+
     /// <summary>
     /// Gets the status of the workflow with the given instanceId.
     /// </summary>
@@ -42,6 +51,14 @@ public interface IWorkflowMonitor
     /// <returns></returns>
     Task<(TRequest? request, TResponse? response)> GetWorkflowDataAsync<TRequest, TResponse>(string instanceId)
         where TRequest : IWorkflowRequest<TResponse>;
+
+    /// <summary>
+    /// Gets the request data of recent workflows.
+    /// </summary>
+    /// <param name="instanceIdPrefix"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<WorkflowStatus<JToken, JToken?>> GetRecentWorkflowsAsync(string instanceIdPrefix, CancellationToken token);
 
     /// <summary>
     /// Gets the request data of recent workflows.

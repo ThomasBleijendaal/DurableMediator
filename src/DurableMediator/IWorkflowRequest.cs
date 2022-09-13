@@ -6,11 +6,9 @@ namespace DurableMediator;
 /// Represents a workflow requests which will return TResponse as response.
 /// </summary>
 /// <typeparam name="TResponse"></typeparam>
-public interface IWorkflowRequest<TResponse>
+public interface IWorkflowRequest<TResponse> : IWorkflowRequestName
 {
     public string InstanceId { get; }
-
-    public string WorkflowName { get; }
 }
 
 /// <summary>

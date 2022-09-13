@@ -7,17 +7,17 @@ namespace WorkflowFunctionApp.Workflows;
 
 internal record BBBWorkflow(ILogger<BBBWorkflow> Logger) : IWorkflow<BBBWorkflowRequest, BBBWorkflowResponse>
 {
-    public async Task<BBBWorkflowResponse> OrchestrateAsync(WorkflowContext<BBBWorkflowRequest> context)
+    public async Task<BBBWorkflowResponse> OrchestrateAsync(WorkflowExecution<BBBWorkflowRequest> execution)
     {
-        var logger = context.OrchestrationContext.CreateReplaySafeLogger(Logger);
+        var logger = execution.OrchestrationContext.CreateReplaySafeLogger(Logger);
 
         logger.LogInformation("Start with workflow");
 
-        var step1 = await context.DurableMediator.SendAsync(new RequestB(context.Request.BbbId));
+        var step1 = await execution.ExecuteAsync(new RequestB(execution.Request.BbbId));
 
-        var step2 = await context.DurableMediator.SendAsync(new RequestB(step1.Id));
+        var step2 = await execution.ExecuteAsync(new RequestB(step1.Id));
 
-        var step3 = await context.DurableMediator.SendAsync(new RequestB(step2.Id));
+        var step3 = await execution.ExecuteAsync(new RequestB(step2.Id));
 
         logger.LogInformation("Workflow done");
 
