@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using WorkflowFunctionApp.Workflows;
 
 namespace WorkflowFunctionApp;
 
@@ -14,8 +13,8 @@ internal static class WorkflowResult
         [Workflow] IWorkflowMonitor monitor,
         string instanceId)
     {
-        var (request, response) = await monitor.GetWorkflowDataAsync<BBBWorkflowRequest, BBBWorkflowResponse>(instanceId);
+        var data = await monitor.GetWorkflowAsync(instanceId);
 
-        return new OkObjectResult(new { Request = request, Response = response });
+        return new OkObjectResult(data);
     }
 }

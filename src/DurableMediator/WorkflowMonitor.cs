@@ -3,6 +3,7 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.ContextImplementations;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 
 namespace DurableMediator;
 
@@ -17,6 +18,13 @@ internal class WorkflowMonitor : IWorkflowMonitor
     {
         _config = config.Value;
         _durableClientFactory = durableClientFactory;
+    }
+
+    public async Task<WorkflowStatus<JToken, JToken?>?> GetWorkflowAsync(string instanceId)
+    {
+        var status = await GetClient().GetStatusAsync(Constants.WorkflowIdPrefix + instanceId).ConfigureAwait(false);
+
+        return Map(status);
     }
 
     public async Task<WorkflowStatus<TRequest>?> GetWorkflowAsync<TRequest>(string instanceId)
@@ -66,12 +74,23 @@ internal class WorkflowMonitor : IWorkflowMonitor
         return (input, status.Output.ToObject<TResponse?>());
     }
 
+    public async IAsyncEnumerable<WorkflowStatus<JToken, JToken?>> GetRecentWorkflowsAsync(string instanceIdPrefix, [EnumeratorCancellation] CancellationToken token)
+    {
+        await foreach (var item in GetWorkflowStatusAsync(instanceIdPrefix, status => true, token).ConfigureAwait(false))
+        {
+            if (Map(item) is { } status)
+            {
+                yield return status;
+            }
+        }
+    }
+
     public async IAsyncEnumerable<WorkflowStatus<TRequest>> GetRecentWorkflowsAsync<TRequest>(string instanceIdPrefix, [EnumeratorCancellation] CancellationToken token)
         where TRequest : IWorkflowRequest
     {
-        await foreach (var item in GetWorkflowStatusAsync<TRequest>(instanceIdPrefix, token).ConfigureAwait(false))
+        await foreach (var item in GetWorkflowStatusAsync(instanceIdPrefix, IsInvocationOfType<TRequest>, token).ConfigureAwait(false))
         {
-            if (Map<TRequest>(item) is WorkflowStatus<TRequest> status)
+            if (Map<TRequest>(item) is { } status)
             {
                 yield return status;
             }
@@ -81,7 +100,7 @@ internal class WorkflowMonitor : IWorkflowMonitor
     public async IAsyncEnumerable<WorkflowStatus<TRequest, TResponse>> GetRecentWorkflowsAsync<TRequest, TResponse>(string instanceIdPrefix, [EnumeratorCancellation] CancellationToken token)
         where TRequest : IWorkflowRequest<TResponse>
     {
-        await foreach (var item in GetWorkflowStatusAsync<TRequest>(instanceIdPrefix, token).ConfigureAwait(false))
+        await foreach (var item in GetWorkflowStatusAsync(instanceIdPrefix, IsInvocationOfType<TRequest>, token).ConfigureAwait(false))
         {
             if (Map<TRequest, TResponse>(item) is WorkflowStatus<TRequest, TResponse> status)
             {
@@ -124,7 +143,7 @@ internal class WorkflowMonitor : IWorkflowMonitor
         return status;
     }
 
-    private async IAsyncEnumerable<DurableOrchestrationStatus> GetWorkflowStatusAsync<TRequest>(string instanceIdPrefix, [EnumeratorCancellation] CancellationToken token)
+    private async IAsyncEnumerable<DurableOrchestrationStatus> GetWorkflowStatusAsync(string instanceIdPrefix, Func<DurableOrchestrationStatus, bool> selector, [EnumeratorCancellation] CancellationToken token)
     {
         var client = GetClient();
 
@@ -145,7 +164,7 @@ internal class WorkflowMonitor : IWorkflowMonitor
                 ContinuationToken = continueToken
             }, token).ConfigureAwait(false);
 
-            day.AddRange(result.DurableOrchestrationState.Where(IsInvocationOfType<TRequest>));
+            day.AddRange(result.DurableOrchestrationState.Where(selector));
 
             if (!string.IsNullOrWhiteSpace(result.ContinuationToken))
             {
@@ -164,6 +183,28 @@ internal class WorkflowMonitor : IWorkflowMonitor
             }
         }
         while (createdTimeFrom > maxTimeFrom && !token.IsCancellationRequested);
+    }
+
+    private static WorkflowStatus<JToken, JToken?>? Map(DurableOrchestrationStatus? status)
+    {
+        if (status == null)
+        {
+            return null;
+        }
+
+        var state = status.CustomStatus.ToObject<WorkflowErrorState>();
+
+        var input = status.Input.ToObject<WorkflowRequestName>();
+
+        return new WorkflowStatus<JToken, JToken?>(
+            input.WorkflowName,
+            status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
+            Map(status.RuntimeStatus),
+            status.Input,
+            status.Output,
+            status.CreatedTime,
+            status.LastUpdatedTime,
+            state?.ExceptionMessage);
     }
 
     private static WorkflowStatus<TRequest>? Map<TRequest>(DurableOrchestrationStatus? status)
@@ -225,4 +266,9 @@ internal class WorkflowMonitor : IWorkflowMonitor
             OrchestrationRuntimeStatus.Pending => WorkflowRuntimeStatus.Pending,
             _ => WorkflowRuntimeStatus.Unknown
         };
+
+    private class WorkflowRequestName : IWorkflowRequestName
+    {
+        public string WorkflowName { get; set; } = string.Empty;
+    }
 }

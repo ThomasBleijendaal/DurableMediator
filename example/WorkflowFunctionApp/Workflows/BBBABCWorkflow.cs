@@ -7,13 +7,13 @@ namespace WorkflowFunctionApp.Workflows;
 
 internal record BBBABCWorkflow(ILogger<BBBABCWorkflow> Logger) : IWorkflow<BBBABCWorkflowRequest, Unit>
 {
-    public async Task<Unit> OrchestrateAsync(WorkflowContext<BBBABCWorkflowRequest> context)
+    public async Task<Unit> OrchestrateAsync(WorkflowExecution<BBBABCWorkflowRequest> execution)
     {
-        var logger = context.OrchestrationContext.CreateReplaySafeLogger(Logger);
+        var logger = execution.OrchestrationContext.CreateReplaySafeLogger(Logger);
 
         logger.LogInformation("Start with workflow");
 
-        var bbbResult = await context.SubOrchestrator.CallSubWorkflowAsync(new BBBWorkflowRequest(context.Request.BbbAbcId));
+        var bbbResult = await execution.CallSubWorkflowAsync(new BBBWorkflowRequest(execution.Request.BbbAbcId));
         if (bbbResult == null)
         {
             logger.LogInformation("BBB workflow returned null");
@@ -25,7 +25,7 @@ internal record BBBABCWorkflow(ILogger<BBBABCWorkflow> Logger) : IWorkflow<BBBAB
 
         logger.LogInformation("Triggering ABC");
 
-        context.SubOrchestrator.StartWorkflow(new ABCWorkflowRequest(bbbResult.BbbId));
+        execution.StartWorkflow(new ABCWorkflowRequest(bbbResult.BbbId));
 
         logger.LogInformation("Workflow done - not waiting on ABC");
 

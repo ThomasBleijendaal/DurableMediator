@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WorkflowFunctionApp;
+using WorkflowFunctionApp.Workflows;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: InternalsVisibleTo("DurableMediator")]
