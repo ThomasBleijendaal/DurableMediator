@@ -29,7 +29,6 @@ public interface IWorkflowExecution
     /// <param name="delay"></param>
     /// <returns></returns>
     /// <exception cref="OrchestrationRetryException" />
-
     Task ExecuteWithRetryAsync(
         IRequest<IRetryResponse> request,
         CancellationToken token,
