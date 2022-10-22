@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
 
 namespace DurableMediator;
 
@@ -6,11 +7,14 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
     where TRequest : class, IWorkflowRequest<TResponse>
 {
     private readonly IWorkflow<TRequest, TResponse> _workflow;
+    private readonly ILoggerFactory _loggerFactory;
 
     public WorkflowWrapper(
-        IWorkflow<TRequest, TResponse> workflow)
+        IWorkflow<TRequest, TResponse> workflow,
+        ILoggerFactory loggerFactory)
     {
-        _workflow = workflow ?? throw new ArgumentNullException(nameof(workflow), $"Workflow of type IWorkflow<{typeof(TRequest).Name}, {typeof(TResponse)}> not found");
+        _workflow = workflow;
+        _loggerFactory = loggerFactory;
     }
 
     public async Task OrchestrateAsync(IDurableOrchestrationContext context, EntityId entityId, IDurableMediator mediator)
@@ -22,7 +26,8 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
                 request, 
                 context,
                 entityId, 
-                mediator));
+                mediator,
+                _loggerFactory.CreateLogger<WorkflowExecution<TRequest>>()));
 
         if (response is TResponse workflowResponse)
         {

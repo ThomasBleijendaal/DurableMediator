@@ -1,4 +1,6 @@
 ﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace DurableMediator;
 
@@ -28,7 +30,7 @@ internal class WorkflowResolver : IWorkflowResolver
         var workflowType = typeof(IWorkflow<,>).MakeGenericType(descriptor.Request, descriptor.Response);
         var wrapperType = typeof(WorkflowWrapper<,>).MakeGenericType(descriptor.Request, descriptor.Response);
 
-        var wrapper = Activator.CreateInstance(wrapperType, _serviceProvider.GetService(workflowType))
+        var wrapper = Activator.CreateInstance(wrapperType, _serviceProvider.GetRequiredService(workflowType), _serviceProvider.GetRequiredService<ILoggerFactory>())
             ?? throw new InvalidOperationException("Failed to create workflow wrapper");
 
         return (IWorkflowWrapper)wrapper;

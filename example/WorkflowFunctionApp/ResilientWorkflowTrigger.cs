@@ -6,14 +6,14 @@ using WorkflowFunctionApp.Workflows;
 
 namespace WorkflowFunctionApp;
 
-internal static class ABCWorkflowTrigger
+internal static class ResilientWorkflowTrigger
 {
-    [FunctionName(nameof(ABCWorkflowTrigger))]
+    [FunctionName(nameof(ResilientWorkflowTrigger))]
     public static async Task<IActionResult> TriggerOrchestratorAsync(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "abc")] HttpRequestMessage req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "resilient")] HttpRequestMessage req,
         [Workflow] IWorkflowStarter starter)
     {
-        var start = await starter.StartNewAsync(new ABCWorkflowRequest(Guid.NewGuid()));
+        var start = await starter.StartNewAsync(new ResilientWorkflowRequest(Guid.NewGuid()));
 
         return new AcceptedResult("", start);
     }
