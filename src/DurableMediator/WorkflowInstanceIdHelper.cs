@@ -4,4 +4,7 @@ internal class WorkflowInstanceIdHelper
 {
     public static string GetId<TResponse>(IWorkflowRequest<TResponse> request)
         => Constants.WorkflowIdPrefix + request.InstanceId;
+
+    public static string GetOriginalInstanceId(string workflowId)
+        => workflowId.Replace(Constants.WorkflowIdPrefix, "");
 }

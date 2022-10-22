@@ -18,6 +18,8 @@ public class Startup : FunctionsStartup
         builder.Services.AddLogging(logging =>
         {
             logging.AddConsole();
+
+            logging.AddSeq();
         });
 
         builder.AddDurableMediator(typeof(Startup));

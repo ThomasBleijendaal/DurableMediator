@@ -22,6 +22,8 @@ public static class FunctionsHostBuilderExtensions
         builder.Services.AddTransient<IWorkflowStarter, WorkflowStarter>();
         builder.Services.AddTransient<IWorkflowOrchestrator, WorkflowOrchestrator>();
 
+        builder.Services.AddTransient<ITracingProvider, DefaultTracingProvider>();
+
         builder.Services.AddMediatR(handlerAssemblyMarkerTypes);
 
         AddWorkflowClasses(builder.Services, handlerAssemblyMarkerTypes.Select(x => x.GetTypeInfo().Assembly));

@@ -8,13 +8,16 @@ namespace DurableMediator;
 internal class WorkflowStarter : IWorkflowStarter
 {
     private readonly WorkflowConfiguration _config;
+    private readonly ITracingProvider _tracingProvider;
     private readonly IDurableClientFactory _durableClientFactory;
 
     public WorkflowStarter(
         IOptions<WorkflowConfiguration> config,
+        ITracingProvider tracingProvider,
         IDurableClientFactory durableClientFactory)
     {
         _config = config.Value;
+        _tracingProvider = tracingProvider;
         _durableClientFactory = durableClientFactory;
     }
 
@@ -22,7 +25,11 @@ internal class WorkflowStarter : IWorkflowStarter
     {
         var client = _durableClientFactory.CreateClient(new DurableClientOptions { TaskHub = _config.HubName });
 
-        await client.StartNewAsync(input.GetType().Name, WorkflowInstanceIdHelper.GetId(input), input).ConfigureAwait(false);
+        var wrappedInput = new WorkflowRequestWrapper<IWorkflowRequest<TResponse>>(
+            _tracingProvider.GetTracing(),
+            input);
+
+        await client.StartNewAsync(input.GetType().Name, WorkflowInstanceIdHelper.GetId(input), wrappedInput).ConfigureAwait(false);
 
         return new WorkflowStartResult(input.InstanceId);
     }

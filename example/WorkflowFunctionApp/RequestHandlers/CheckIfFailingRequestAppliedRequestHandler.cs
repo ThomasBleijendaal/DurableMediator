@@ -18,12 +18,22 @@ internal class CheckIfFailingRequestAppliedRequestHandler : IRequestHandler<Chec
     {
         _logger.LogInformation("Processing CheckIfFailingRequestAppliedRequest");
 
-        await Task.Delay(10000, cancellationToken);
+        await Task.Delay(100, cancellationToken);
 
         if (Random.Shared.Next(1, 10) < 3)
         {
+            _logger.LogInformation("FailingRequest did not apply");
+
             return null;
         }
+        else if (Random.Shared.Next(1, 10) < 5)
+        {
+            _logger.LogWarning("Failed to check if FailingRequest applied");
+
+            throw new InvalidOperationException();
+        }
+
+        _logger.LogInformation("FailingRequest applied");
 
         return new BasicResponse(Guid.NewGuid());
     }

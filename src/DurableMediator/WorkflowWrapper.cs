@@ -7,31 +7,53 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
     where TRequest : class, IWorkflowRequest<TResponse>
 {
     private readonly IWorkflow<TRequest, TResponse> _workflow;
-    private readonly ILoggerFactory _loggerFactory;
+    private readonly ITracingProvider _tracingProvider;
 
     public WorkflowWrapper(
         IWorkflow<TRequest, TResponse> workflow,
-        ILoggerFactory loggerFactory)
+        ITracingProvider tracingProvider)
     {
         _workflow = workflow;
-        _loggerFactory = loggerFactory;
+        _tracingProvider = tracingProvider;
     }
 
-    public async Task OrchestrateAsync(IDurableOrchestrationContext context, EntityId entityId, IDurableMediator mediator)
+    public Type WorkflowType => _workflow.GetType();
+
+    public async Task OrchestrateAsync(
+        IDurableOrchestrationContext context,
+        EntityId entityId,
+        IDurableMediator mediator,
+        ILogger replaySafeLogger)
     {
-        var request = context.GetInput<TRequest>();
+        var requestWrapper = context.GetInput<WorkflowRequestWrapper<TRequest>>();
 
-        var response = await _workflow.OrchestrateAsync(
-            new WorkflowExecution<TRequest>(
-                request, 
-                context,
-                entityId, 
-                mediator,
-                _loggerFactory.CreateLogger<WorkflowExecution<TRequest>>()));
+        using var _ = replaySafeLogger.BeginTracingScope(
+            _tracingProvider,
+            requestWrapper.Tracing,
+            entityId,
+            requestWrapper.Request.InstanceId,
+            context.Name);
 
-        if (response is TResponse workflowResponse)
+        try
         {
-            context.SetOutput(workflowResponse);
+            var response = await _workflow.OrchestrateAsync(
+                new WorkflowExecution<TRequest>(
+                    requestWrapper.Request,
+                    context,
+                    entityId,
+                    mediator,
+                    replaySafeLogger));
+
+            if (response is TResponse workflowResponse)
+            {
+                context.SetOutput(workflowResponse);
+            }
+        }
+        catch (Exception ex) when (replaySafeLogger.LogException(ex, "Orchestration failed"))
+        {
+            context.SetCustomStatus(new WorkflowErrorState(ex.Message));
+
+            throw;
         }
     }
 }

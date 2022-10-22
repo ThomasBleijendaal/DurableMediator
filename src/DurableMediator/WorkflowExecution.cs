@@ -9,20 +9,31 @@ public record WorkflowExecution<TRequest>(
     IDurableOrchestrationContext OrchestrationContext,
     EntityId EntityId,
     IDurableMediator DurableMediator,
-    ILogger Logger) : IWorkflowExecution, ISubWorkflowOrchestrator
+    ILogger ReplaySafeLogger) : IWorkflowExecution, ISubWorkflowOrchestrator
 {
     public async Task<TResponse> ExecuteAsync<TResponse>(IRequest<TResponse> request)
     {
         if (typeof(TResponse) == typeof(Unit))
         {
-            await DurableMediator.SendObjectAsync(new MediatorRequest((IRequest<Unit>)request));
+            await DurableMediator.SendObjectAsync(new MediatorRequest(
+                CurrentInput.Tracing,
+                WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId), 
+                (IRequest<Unit>)request));
 
             return default!;
         }
 
-        var response = await DurableMediator.SendObjectWithResponseAsync(new MediatorRequestWithResponse((IRequest<object>)request));
+        var response = await DurableMediator.SendObjectWithResponseAsync(new MediatorRequestWithResponse(
+            CurrentInput.Tracing,
+            WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId), 
+            (IRequest<object>)request));
 
-        return (TResponse)(response?.Response ?? throw new Exception("Received an empty response"));
+        if (response == null)
+        {
+            throw new Exception("Received an empty response");
+        }
+
+        return (TResponse)(response.Response);
     }
 
     public async Task ExecuteWithRetryAsync(
@@ -48,7 +59,7 @@ public record WorkflowExecution<TRequest>(
                 return;
             }
 
-            OrchestrationContext.CreateReplaySafeLogger(Logger).LogInformation("Execution attempt {attempt} failed", attempt);
+            ReplaySafeLogger.LogInformation("Execution attempt {attempt} of {requestName} failed", attempt, request.GetType().Name);
 
             await OrchestrationContext.CreateTimer(
                 DateTime.UtcNow.Add(delay * attempt),
@@ -102,12 +113,12 @@ public record WorkflowExecution<TRequest>(
                 }
                 catch (Exception ex)
                 {
-                    OrchestrationContext.CreateReplaySafeLogger(Logger).LogInformation(ex, "Execution attempt {attempt} failed", attempt);
+                    ReplaySafeLogger.LogInformation(ex, "Execution attempt {attempt} of {requestName} failed", attempt, request.GetType().Name);
                 }
             }
             else
             {
-                OrchestrationContext.CreateReplaySafeLogger(Logger).LogInformation("Execution attempt {attempt} skipped due to check failure", attempt);
+                ReplaySafeLogger.LogInformation("Execution attempt {attempt} of {requestName} skipped due to check failure", attempt, request.GetType().Name);
             }
 
             await OrchestrationContext.CreateTimer(
@@ -120,7 +131,7 @@ public record WorkflowExecution<TRequest>(
 
                 if (result != null)
                 {
-                    OrchestrationContext.CreateReplaySafeLogger(Logger).LogInformation("Execution attempt {attempt} check found successful execution", attempt);
+                    ReplaySafeLogger.LogInformation("Execution attempt {attempt} of {requestName} check found successful execution", attempt, request.GetType().Name);
 
                     return result;
                 }
@@ -129,7 +140,7 @@ public record WorkflowExecution<TRequest>(
             }
             catch (Exception ex)
             {
-                OrchestrationContext.CreateReplaySafeLogger(Logger).LogInformation(ex, "Execution attempt {attempt} check failed", attempt);
+                ReplaySafeLogger.LogInformation(ex, "Execution attempt {attempt} of {requestName} check failed", attempt, request.GetType().Name);
 
                 checkFailed = true;
             }
@@ -141,11 +152,17 @@ public record WorkflowExecution<TRequest>(
 
 
     public Task<TWorkflowResponse?> CallSubWorkflowAsync<TWorkflowResponse>(IWorkflowRequest<TWorkflowResponse> request)
-        => OrchestrationContext.CallSubOrchestratorAsync<TWorkflowResponse?>(request.GetType().Name, WorkflowInstanceIdHelper.GetId(request), request);
+        => OrchestrationContext.CallSubOrchestratorAsync<TWorkflowResponse?>(request.GetType().Name, WorkflowInstanceIdHelper.GetId(request), ForwardRequestWrapper(request));
 
     public void StartWorkflow(IWorkflowRequest request)
-        => OrchestrationContext.StartNewOrchestration(request.GetType().Name, request, WorkflowInstanceIdHelper.GetId(request));
+        => OrchestrationContext.StartNewOrchestration(request.GetType().Name, ForwardRequestWrapper(request), WorkflowInstanceIdHelper.GetId(request));
 
     public void StartWorkflow<TWorkflowResponse>(IWorkflowRequest<TWorkflowResponse> request)
-        => OrchestrationContext.StartNewOrchestration(request.GetType().Name, request, WorkflowInstanceIdHelper.GetId(request));
+        => OrchestrationContext.StartNewOrchestration(request.GetType().Name, ForwardRequestWrapper(request), WorkflowInstanceIdHelper.GetId(request));
+
+    private WorkflowRequestWrapper<TSubWorkflowRequest> ForwardRequestWrapper<TSubWorkflowRequest>(TSubWorkflowRequest request) 
+        => new WorkflowRequestWrapper<TSubWorkflowRequest>(CurrentInput.Tracing, request);
+
+    private WorkflowRequestWrapper<TRequest> CurrentInput 
+        => OrchestrationContext.GetInput<WorkflowRequestWrapper<TRequest>>();
 }
