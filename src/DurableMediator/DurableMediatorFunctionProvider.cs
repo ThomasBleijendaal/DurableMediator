@@ -16,7 +16,7 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
         _workflows = workflows;
     }
 
-    public ImmutableDictionary<string, ImmutableArray<string>> FunctionErrors { get; } 
+    public ImmutableDictionary<string, ImmutableArray<string>> FunctionErrors { get; }
         = new Dictionary<string, ImmutableArray<string>>().ToImmutableDictionary();
 
     public Task<ImmutableArray<FunctionMetadata>> GetFunctionMetadataAsync()
@@ -30,7 +30,8 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
     {
         var list = new List<FunctionMetadata>
         {
-            GetDurableMediatorFunctionMetadata()
+            GetActivityFunctionMetadata(nameof(ActivityFunction.SendObjectAsync)),
+            GetActivityFunctionMetadata(nameof(ActivityFunction.SendObjectWithResponseAsync))
         };
 
         list.AddRange(_workflows.Select(GetOrchestratorFunctionMetadata));
@@ -38,21 +39,25 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
         return list;
     }
 
-    private FunctionMetadata GetDurableMediatorFunctionMetadata()
+    private FunctionMetadata GetActivityFunctionMetadata(string functionName)
     {
         var assembly = Assembly.GetExecutingAssembly();
         var functionMetadata = new FunctionMetadata()
         {
-            Name = nameof(DurableMediatorEntity),
+            Name = functionName.Replace("Async", ""),
             FunctionDirectory = null,
             ScriptFile = $"assembly:{assembly.FullName}",
-            EntryPoint = $"{assembly.GetName().Name}.Functions.{nameof(DurableMediatorFunction)}.{nameof(DurableMediatorFunction.RunAsync)}",
+            EntryPoint = $"{assembly.GetName().Name}.Functions.{nameof(ActivityFunction)}.{functionName}",
             Language = "DotNetAssembly"
         };
 
         functionMetadata.Bindings.Add(
             BindingMetadata.Create(
-                JObject.FromObject(new EntityTriggerMetadata())));
+                JObject.FromObject(new ActivityTriggerMetadata())));
+
+        functionMetadata.Bindings.Add(
+            BindingMetadata.Create(
+                JObject.FromObject(new WorkflowMetadata("executor"))));
 
         return functionMetadata;
     }
@@ -75,7 +80,7 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
 
         functionMetadata.Bindings.Add(
             BindingMetadata.Create(
-                JObject.FromObject(new WorkflowMetadata())));
+                JObject.FromObject(new WorkflowMetadata("orchestrator"))));
 
         return functionMetadata;
     }

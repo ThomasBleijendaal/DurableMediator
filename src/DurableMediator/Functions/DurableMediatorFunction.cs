@@ -1,9 +1,15 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+﻿namespace DurableMediator.Functions;
 
-namespace DurableMediator.Functions;
-
-internal static class DurableMediatorFunction
+internal static class ActivityFunction
 {
-    public static Task RunAsync(IDurableEntityContext ctx) 
-        => ctx.DispatchAsync<DurableMediatorEntity>();
+    public const string SendObject = "MediatorCommand";
+    public const string SendObjectWithResponse = "MediatorQuery";
+
+    public static Task SendObjectAsync(
+        MediatorRequest request, IActivityExecutor executor)
+        => executor.SendObjectAsync(request);
+    
+    public static Task<MediatorResponse> SendObjectWithResponseAsync(
+        MediatorRequestWithResponse request, IActivityExecutor executor)
+        => executor.SendObjectWithResponseAsync(request);
 }

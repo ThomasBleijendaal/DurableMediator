@@ -20,7 +20,7 @@ internal record ResilientWorkflow(ILogger<ResilientWorkflow> Logger) : IWorkflow
 
         await execution.ExecuteWithRetryAsync(
             new ErrorProneRequest(execution.Request.DodgyResourceId), CancellationToken.None, 
-            maxAttempts: 20);
+            maxAttempts: 1);
 
         logger.LogInformation("Workflow done");
 

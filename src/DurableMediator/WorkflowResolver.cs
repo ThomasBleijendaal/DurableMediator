@@ -17,7 +17,7 @@ internal class WorkflowResolver : IWorkflowResolver
     }
 
     public EntityId GetEntityId(IDurableOrchestrationContext context)
-        => new(nameof(DurableMediatorEntity), context.InstanceId);
+        => new("DurableMediatorEntity", context.InstanceId);
 
     public IWorkflowWrapper GetWorkflow(string workflowRequestName)
     {

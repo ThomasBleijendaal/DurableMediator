@@ -4,16 +4,16 @@ using Microsoft.Extensions.Logging;
 
 namespace DurableMediator;
 
-internal class DurableMediatorEntity : IDurableMediator
+internal class ActivityExecutor : IActivityExecutor
 {
     private readonly IMediator _mediator;
     private readonly ITracingProvider _tracingProvider;
-    private readonly ILogger<DurableMediatorEntity> _logger;
+    private readonly ILogger<ActivityExecutor> _logger;
 
-    public DurableMediatorEntity(
+    public ActivityExecutor(
         IMediator mediator,
         ITracingProvider tracingProvider,
-        ILogger<DurableMediatorEntity> logger)
+        ILogger<ActivityExecutor> logger)
     {
         _mediator = mediator;
         _tracingProvider = tracingProvider;
@@ -23,9 +23,9 @@ internal class DurableMediatorEntity : IDurableMediator
     public async Task SendObjectAsync(MediatorRequest request)
     {
         using var _ = _logger.BeginTracingScope(
-            _tracingProvider, 
+            _tracingProvider,
             request.Tracing,
-            Entity.Current.EntityId,
+            new EntityId("fdsa", "fdsa"),
             request.InstanceId,
             request.Request.GetType().Name);
 
@@ -44,7 +44,7 @@ internal class DurableMediatorEntity : IDurableMediator
         using var _ = _logger.BeginTracingScope(
             _tracingProvider,
             request.Tracing,
-            Entity.Current.EntityId,
+            new EntityId("fdsa", "fdsa"),
             request.InstanceId,
             (string)request.Request.GetType().Name);
 

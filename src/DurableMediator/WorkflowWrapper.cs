@@ -46,7 +46,7 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
 
             if (response is TResponse workflowResponse)
             {
-                context.SetOutput(workflowResponse);
+                context.SetOutput(workflowResponse); 
             }
         }
         catch (Exception ex) when (replaySafeLogger.LogException(ex, "Orchestration failed"))

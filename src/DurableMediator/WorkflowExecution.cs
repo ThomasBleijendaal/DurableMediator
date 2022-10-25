@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using DurableMediator.Functions;
+using MediatR;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 
@@ -11,31 +12,12 @@ public record WorkflowExecution<TRequest>(
     IDurableMediator DurableMediator,
     ILogger ReplaySafeLogger) : IWorkflowExecution, ISubWorkflowOrchestrator
 {
-    public async Task<TResponse> ExecuteAsync<TResponse>(IRequest<TResponse> request)
+    public Task<TResponse> ExecuteAsync<TResponse>(IRequest<TResponse> request)
     {
-        if (typeof(TResponse) == typeof(Unit))
-        {
-            await DurableMediator.SendObjectAsync(new MediatorRequest(
-                CurrentInput.Tracing,
-                WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId), 
-                (IRequest<Unit>)request));
-
-            return default!;
-        }
-
-        var response = await DurableMediator.SendObjectWithResponseAsync(new MediatorRequestWithResponse(
-            CurrentInput.Tracing,
-            WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId), 
-            (IRequest<object>)request));
-
-        if (response == null)
-        {
-            throw new Exception("Received an empty response");
-        }
-
-        return (TResponse)(response.Response);
+        return ExecuteRequestAsync(request, 1);
     }
 
+    
     public async Task ExecuteWithRetryAsync(
         IRequest<IRetryResponse> request,
         CancellationToken token,
@@ -160,9 +142,54 @@ public record WorkflowExecution<TRequest>(
     public void StartWorkflow<TWorkflowResponse>(IWorkflowRequest<TWorkflowResponse> request)
         => OrchestrationContext.StartNewOrchestration(request.GetType().Name, ForwardRequestWrapper(request), WorkflowInstanceIdHelper.GetId(request));
 
-    private WorkflowRequestWrapper<TSubWorkflowRequest> ForwardRequestWrapper<TSubWorkflowRequest>(TSubWorkflowRequest request) 
+    private WorkflowRequestWrapper<TSubWorkflowRequest> ForwardRequestWrapper<TSubWorkflowRequest>(TSubWorkflowRequest request)
         => new WorkflowRequestWrapper<TSubWorkflowRequest>(CurrentInput.Tracing, request);
 
-    private WorkflowRequestWrapper<TRequest> CurrentInput 
+    private WorkflowRequestWrapper<TRequest> CurrentInput
         => OrchestrationContext.GetInput<WorkflowRequestWrapper<TRequest>>();
+
+    private async Task<TResponse> ExecuteRequestAsync<TResponse>(IRequest<TResponse> request, int maxAttempts)
+    {
+        if (typeof(TResponse) == typeof(Unit))
+        {
+            await SendObjectAsync(request, maxAttempts);
+
+            return default!;
+        }
+
+        var response = await SendObjectWithResponseAsync(request, maxAttempts);
+
+        if (response == null)
+        {
+            throw new Exception("Received an empty response");
+        }
+
+        return (TResponse)response.Response;
+    }
+
+    private async Task SendObjectAsync<TResponse>(IRequest<TResponse> request, int maxAttempts)
+    {
+        await OrchestrationContext.CallActivityWithRetryAsync(ActivityFunction.SendObject,
+            new RetryOptions(TimeSpan.FromSeconds(2), maxAttempts)
+            {
+                BackoffCoefficient = 2
+            },
+            new MediatorRequest(
+                CurrentInput.Tracing,
+                WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
+                (IRequest<Unit>)request));
+    }
+
+    private async Task<MediatorResponse> SendObjectWithResponseAsync<TResponse>(IRequest<TResponse> request, int maxAttempts)
+    {
+        return await OrchestrationContext.CallActivityWithRetryAsync<MediatorResponse>(ActivityFunction.SendObjectWithResponse,
+            new RetryOptions(TimeSpan.FromSeconds(2), maxAttempts)
+            {
+                BackoffCoefficient = 2
+            },
+            new MediatorRequestWithResponse(
+                CurrentInput.Tracing,
+                WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
+                (IRequest<object>)request));
+    }
 }

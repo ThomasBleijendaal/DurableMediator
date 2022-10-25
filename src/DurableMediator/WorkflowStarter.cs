@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.ContextImplementations;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
 using Microsoft.Extensions.Options;
@@ -36,3 +37,19 @@ internal class WorkflowStarter : IWorkflowStarter
 
     public Task<WorkflowStartResult> StartNewAsync(IWorkflowRequest input) => StartNewAsync<Unit>(input);
 }
+
+//internal class WorkflowManagement
+//{
+//    public WorkflowManagement(
+//        IDurableOrchestrationClient)
+//    {
+
+//    }
+
+//    public async Task<WorkflowExecution> GetWorkflowExecutionAsync(string instanceId)
+//    {
+
+//    }
+//}
+
+//internal record WorkflowExecution();

@@ -6,5 +6,6 @@ internal interface IWorkflowResolver
 {
     IWorkflowWrapper GetWorkflow(string workflowRequestName);
 
+    [Obsolete]
     EntityId GetEntityId(IDurableOrchestrationContext context);
 }
