@@ -27,9 +27,9 @@ internal class WorkflowMonitor : IWorkflowMonitor
 
         if (status.RuntimeStatus == OrchestrationRuntimeStatus.Failed)
         {
-            await GetClient().RestartAsync(status.InstanceId, restartWithNewInstanceId: false);
+            //await GetClient().RestartAsync(status.InstanceId, restartWithNewInstanceId: false);
 
-            // await GetClient().RewindAsync(status.InstanceId, "YOLO");
+            await GetClient().RewindAsync(status.InstanceId, "YOLO");
         } 
 
         return Map(status);
