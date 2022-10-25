@@ -8,8 +8,6 @@ namespace DurableMediator;
 public record WorkflowExecution<TRequest>(
     TRequest Request,
     IDurableOrchestrationContext OrchestrationContext,
-    EntityId EntityId,
-    IDurableMediator DurableMediator,
     ILogger ReplaySafeLogger) : IWorkflowExecution, ISubWorkflowOrchestrator
 {
     public Task<TResponse> ExecuteAsync<TResponse>(IRequest<TResponse> request)

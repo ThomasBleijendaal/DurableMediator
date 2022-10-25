@@ -9,7 +9,5 @@ internal interface IWorkflowWrapper
 
     Task OrchestrateAsync(
         IDurableOrchestrationContext context, 
-        EntityId entityId, 
-        IDurableMediator mediator,
         ILogger replaySafeLogger);
 }

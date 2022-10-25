@@ -1,6 +1,5 @@
 ﻿using DurableMediator;
 using MediatR;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using WorkflowFunctionApp.Requests;
 
@@ -14,7 +13,7 @@ internal record BasicWorkflow(ILogger<BasicWorkflow> Logger) : IWorkflow<BasicWo
 {
     public async Task<Unit> OrchestrateAsync(WorkflowExecution<BasicWorkflowRequest> execution)
     {
-        var logger = execution.OrchestrationContext.CreateReplaySafeLogger(Logger);
+        var logger = execution.ReplaySafeLogger;
 
         logger.LogInformation("Start with workflow");
 

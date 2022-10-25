@@ -21,8 +21,6 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
 
     public async Task OrchestrateAsync(
         IDurableOrchestrationContext context,
-        EntityId entityId,
-        IDurableMediator mediator,
         ILogger replaySafeLogger)
     {
         var requestWrapper = context.GetInput<WorkflowRequestWrapper<TRequest>>();
@@ -30,7 +28,6 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
         using var _ = replaySafeLogger.BeginTracingScope(
             _tracingProvider,
             requestWrapper.Tracing,
-            entityId,
             requestWrapper.Request.InstanceId,
             context.Name);
 
@@ -40,8 +37,6 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
                 new WorkflowExecution<TRequest>(
                     requestWrapper.Request,
                     context,
-                    entityId,
-                    mediator,
                     replaySafeLogger));
 
             if (response is TResponse workflowResponse)

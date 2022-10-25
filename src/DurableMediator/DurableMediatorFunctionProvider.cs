@@ -30,8 +30,8 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
     {
         var list = new List<FunctionMetadata>
         {
-            GetActivityFunctionMetadata(nameof(ActivityFunction.SendObjectAsync)),
-            GetActivityFunctionMetadata(nameof(ActivityFunction.SendObjectWithResponseAsync))
+            GetActivityFunctionMetadata(ActivityFunction.SendObject, nameof(ActivityFunction.SendObjectAsync)),
+            GetActivityFunctionMetadata(ActivityFunction.SendObjectWithResponse, nameof(ActivityFunction.SendObjectWithResponseAsync))
         };
 
         list.AddRange(_workflows.Select(GetOrchestratorFunctionMetadata));
@@ -39,15 +39,15 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
         return list;
     }
 
-    private FunctionMetadata GetActivityFunctionMetadata(string functionName)
+    private FunctionMetadata GetActivityFunctionMetadata(string functionName, string methodName)
     {
         var assembly = Assembly.GetExecutingAssembly();
         var functionMetadata = new FunctionMetadata()
         {
-            Name = functionName.Replace("Async", ""),
+            Name = functionName,
             FunctionDirectory = null,
             ScriptFile = $"assembly:{assembly.FullName}",
-            EntryPoint = $"{assembly.GetName().Name}.Functions.{nameof(ActivityFunction)}.{functionName}",
+            EntryPoint = $"{assembly.GetName().Name}.Functions.{nameof(ActivityFunction)}.{methodName}",
             Language = "DotNetAssembly"
         };
 

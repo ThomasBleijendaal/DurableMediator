@@ -20,14 +20,10 @@ internal class WorkflowOrchestrator : IWorkflowOrchestrator
     {
         var workflowWrapper = _workflowResolver.GetWorkflow(context.Name);
 
-        var entityId = _workflowResolver.GetEntityId(context);
-
-        var proxy = context.CreateEntityProxy<IDurableMediator>(entityId);
-
         var logger = _loggerFactory.CreateLogger(workflowWrapper.WorkflowType);
 
         var replaySafeLogger = context.CreateReplaySafeLogger(logger);
 
-        await workflowWrapper.OrchestrateAsync(context, entityId, proxy, replaySafeLogger).ConfigureAwait(true);
+        await workflowWrapper.OrchestrateAsync(context, replaySafeLogger).ConfigureAwait(true);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 
 namespace DurableMediator;
@@ -25,7 +24,6 @@ internal class ActivityExecutor : IActivityExecutor
         using var _ = _logger.BeginTracingScope(
             _tracingProvider,
             request.Tracing,
-            new EntityId("fdsa", "fdsa"),
             request.InstanceId,
             request.Request.GetType().Name);
 
@@ -44,7 +42,6 @@ internal class ActivityExecutor : IActivityExecutor
         using var _ = _logger.BeginTracingScope(
             _tracingProvider,
             request.Tracing,
-            new EntityId("fdsa", "fdsa"),
             request.InstanceId,
             (string)request.Request.GetType().Name);
 

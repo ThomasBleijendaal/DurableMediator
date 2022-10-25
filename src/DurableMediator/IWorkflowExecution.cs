@@ -6,9 +6,7 @@ namespace DurableMediator;
 public interface IWorkflowExecution
 {
     IDurableOrchestrationContext OrchestrationContext { get; }
-    EntityId EntityId { get; }
-    IDurableMediator DurableMediator { get; }
-
+    
     /// <summary>
     /// Executes the given request.
     /// </summary>

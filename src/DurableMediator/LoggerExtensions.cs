@@ -9,14 +9,12 @@ internal static class LoggerExtensions
         this ILogger logger,
         ITracingProvider tracingProvider,
         Tracing tracing,
-        EntityId entityId,
         string instanceId,
         string activityName)
         => logger.BeginScope(tracingProvider.EnrichLogScope(
             tracing,
             new Dictionary<string, object?>
             {
-                { "entityId", entityId },
                 { "instanceId", instanceId },
                 { "activityName", activityName }
             }));
