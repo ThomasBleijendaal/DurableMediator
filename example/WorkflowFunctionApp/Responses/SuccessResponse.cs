@@ -1,7 +1,5 @@
-﻿using DurableMediator;
+﻿namespace WorkflowFunctionApp.Responses;
 
-namespace WorkflowFunctionApp.Responses;
-
-internal record SuccessResponse(Guid Id, bool IsSuccess) : IRetryResponse;
+internal record SuccessResponse(Guid Id);
 
 

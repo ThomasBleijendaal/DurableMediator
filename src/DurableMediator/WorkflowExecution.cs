@@ -10,57 +10,53 @@ public record WorkflowExecution<TRequest>(
     IDurableOrchestrationContext OrchestrationContext,
     ILogger ReplaySafeLogger) : IWorkflowExecution, ISubWorkflowOrchestrator
 {
-    public Task<TResponse> ExecuteAsync<TResponse>(IRequest<TResponse> request)
-    {
-        return ExecuteRequestAsync(request, 1);
-    }
+    public Task<TResponse> ExecuteAsync<TResponse>(IRequest<TResponse> request) 
+        => ExecuteRequestAsync(request, 1);
 
-    
-    public async Task ExecuteWithRetryAsync(
-        IRequest<IRetryResponse> request,
+
+    public Task<TResponse> ExecuteWithRetryAsync<TResponse>(
+        IRequest<TResponse> request,
         CancellationToken token,
         int maxAttempts = 3,
-        TimeSpan delay = default)
-    {
-        if (delay == default)
-        {
-            delay = TimeSpan.FromSeconds(1);
-        }
+        TimeSpan? delay = null)
+        => ExecuteRequestAsync(request, maxAttempts, delay);
+    //{
+      //  return 
 
-        var attempt = 0;
-        do
-        {
-            attempt++;
+        //if (delay == default)
+        //{
+        //    delay = TimeSpan.FromSeconds(1);
+        //}
 
-            var result = await ExecuteAsync(request);
+        //var attempt = 0;
+        //do
+        //{
+        //    attempt++;
 
-            if (result.IsSuccess)
-            {
-                return;
-            }
+        //    var result = await ExecuteAsync(request);
 
-            ReplaySafeLogger.LogInformation("Execution attempt {attempt} of {requestName} failed", attempt, request.GetType().Name);
+        //    if (result.IsSuccess)
+        //    {
+        //        return;
+        //    }
 
-            await OrchestrationContext.CreateTimer(
-                DateTime.UtcNow.Add(delay * attempt),
-                token);
-        }
-        while (attempt < maxAttempts);
+        //    ReplaySafeLogger.LogInformation("Execution attempt {attempt} of {requestName} failed", attempt, request.GetType().Name);
 
-        throw new OrchestrationRetryException();
-    }
+        //    await OrchestrationContext.CreateTimer(
+        //        DateTime.UtcNow.Add(delay * attempt),
+        //        token);
+        //}
+        //while (attempt < maxAttempts);
+
+        //throw new OrchestrationRetryException();
+    //}
 
     public async Task<TResponse> ExecuteWithDelayAsync<TResponse>(
         IRequest<TResponse> request,
         CancellationToken token,
-        TimeSpan delay = default)
+        TimeSpan? delay = null)
     {
-        if (delay == default)
-        {
-            delay = TimeSpan.FromSeconds(1);
-        }
-
-        await OrchestrationContext.CreateTimer(DateTime.UtcNow.Add(delay), token);
+        await OrchestrationContext.CreateTimer(DateTime.UtcNow.Add(delay ?? TimeSpan.FromSeconds(1)), token);
 
         return await ExecuteAsync(request);
     }
@@ -70,13 +66,8 @@ public record WorkflowExecution<TRequest>(
         IRequest<TResponse?> checkIfRequestApplied,
         CancellationToken token,
         int maxAttempts = 3,
-        TimeSpan delay = default)
+        TimeSpan? delay = null)
     {
-        if (delay == default)
-        {
-            delay = TimeSpan.FromSeconds(1);
-        }
-
         var attempt = 0;
         var checkFailed = false;
         do
@@ -102,7 +93,7 @@ public record WorkflowExecution<TRequest>(
             }
 
             await OrchestrationContext.CreateTimer(
-                DateTime.UtcNow.Add(delay * attempt),
+                DateTime.UtcNow.Add((delay ?? TimeSpan.FromSeconds(1)) * attempt),
                 token);
 
             try
@@ -146,16 +137,19 @@ public record WorkflowExecution<TRequest>(
     private WorkflowRequestWrapper<TRequest> CurrentInput
         => OrchestrationContext.GetInput<WorkflowRequestWrapper<TRequest>>();
 
-    private async Task<TResponse> ExecuteRequestAsync<TResponse>(IRequest<TResponse> request, int maxAttempts)
+    private async Task<TResponse> ExecuteRequestAsync<TResponse>(
+        IRequest<TResponse> request, 
+        int maxAttempts,
+        TimeSpan? delay = null)
     {
         if (typeof(TResponse) == typeof(Unit))
         {
-            await SendObjectAsync(request, maxAttempts);
+            await SendObjectAsync(request, maxAttempts, delay);
 
             return default!;
         }
 
-        var response = await SendObjectWithResponseAsync(request, maxAttempts);
+        var response = await SendObjectWithResponseAsync(request, maxAttempts, delay);
 
         if (response == null)
         {
@@ -165,10 +159,9 @@ public record WorkflowExecution<TRequest>(
         return (TResponse)response.Response;
     }
 
-    private async Task SendObjectAsync<TResponse>(IRequest<TResponse> request, int maxAttempts)
-    {
-        await OrchestrationContext.CallActivityWithRetryAsync(ActivityFunction.SendObject,
-            new RetryOptions(TimeSpan.FromSeconds(2), maxAttempts)
+    private async Task SendObjectAsync<TResponse>(IRequest<TResponse> request, int maxAttempts, TimeSpan? delay) 
+        => await OrchestrationContext.CallActivityWithRetryAsync(ActivityFunction.SendObject,
+            new RetryOptions(DelayOrDefault(delay), maxAttempts)
             {
                 BackoffCoefficient = 2
             },
@@ -176,12 +169,10 @@ public record WorkflowExecution<TRequest>(
                 CurrentInput.Tracing,
                 WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
                 (IRequest<Unit>)request));
-    }
 
-    private async Task<MediatorResponse> SendObjectWithResponseAsync<TResponse>(IRequest<TResponse> request, int maxAttempts)
-    {
-        return await OrchestrationContext.CallActivityWithRetryAsync<MediatorResponse>(ActivityFunction.SendObjectWithResponse,
-            new RetryOptions(TimeSpan.FromSeconds(2), maxAttempts)
+    private async Task<MediatorResponse> SendObjectWithResponseAsync<TResponse>(IRequest<TResponse> request, int maxAttempts, TimeSpan? delay) 
+        => await OrchestrationContext.CallActivityWithRetryAsync<MediatorResponse>(ActivityFunction.SendObjectWithResponse,
+            new RetryOptions(DelayOrDefault(delay), maxAttempts)
             {
                 BackoffCoefficient = 2
             },
@@ -189,5 +180,7 @@ public record WorkflowExecution<TRequest>(
                 CurrentInput.Tracing,
                 WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
                 (IRequest<object>)request));
-    }
+
+    private static TimeSpan DelayOrDefault(TimeSpan? delay)
+        => delay ?? TimeSpan.FromMilliseconds(Random.Shared.Next(500, 800));
 }

@@ -3,7 +3,6 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.ContextImplementations;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace DurableMediator;
@@ -185,10 +184,6 @@ internal class WorkflowMonitor : IWorkflowMonitor
                 foreach (var item in day.OrderByDescending(x => x.CreatedTime))
                 {
                     var test = await client.GetStatusAsync(item.InstanceId, showHistory: true, showHistoryOutput: true, showInput: true);
-
-                    //client.RewindAsync()
-
-                    //var history = JsonConvert.SerializeObject(test.History);
 
                     yield return item;
                 }

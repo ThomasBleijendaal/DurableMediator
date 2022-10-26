@@ -17,11 +17,13 @@ internal record ResilientWorkflow(ILogger<ResilientWorkflow> Logger) : IWorkflow
 
         logger.LogInformation("Start with workflow");
 
-        await execution.ExecuteWithRetryAsync(
-            new ErrorProneRequest(execution.Request.DodgyResourceId), CancellationToken.None, 
-            maxAttempts: 1);
+        await execution.ExecuteAsync(new SimpleRequest(execution.OrchestrationContext.NewGuid(), "1"));
 
-        logger.LogInformation("Workflow done");
+        var result = await execution.ExecuteWithRetryAsync(
+            new ErrorProneRequest(execution.Request.DodgyResourceId), CancellationToken.None, 
+            maxAttempts: 3);
+
+        logger.LogInformation("Workflow done with id {id}", result.Id);
 
         return Unit.Value;
     }

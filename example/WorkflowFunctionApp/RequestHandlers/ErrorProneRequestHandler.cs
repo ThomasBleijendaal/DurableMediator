@@ -18,17 +18,19 @@ internal class ErrorProneRequestHandler : IRequestHandler<ErrorProneRequest, Suc
     {
         _logger.LogInformation("Processing ErrorProneRequest");
 
-        var isSuccess = Random.Shared.Next(1, 10) < 5;
+        var isSuccess = Random.Shared.Next(1, 10) < -1;
 
         if (!isSuccess)
         {
             _logger.LogWarning("ErrorProneRequest failed!");
+
+            throw new InvalidOperationException("Error prone handler failed");
         }
         else
         {
             _logger.LogInformation("ErrorProneRequest succeeded!");
         }
 
-        return Task.FromResult(new SuccessResponse(Guid.NewGuid(), isSuccess));
+        return Task.FromResult(new SuccessResponse(Guid.NewGuid()));
     }
 }
