@@ -18,7 +18,7 @@ public static class FunctionsHostBuilderExtensions
             .Bind(config.GetSection("AzureFunctionsJobHost:extensions:durableTask"))
             .ValidateDataAnnotations();
 
-        builder.Services.AddTransient<IWorkflowMonitor, WorkflowMonitor>();
+        builder.Services.AddTransient<IWorkflowManagement, WorkflowManagement>();
         builder.Services.AddTransient<IWorkflowStarter, WorkflowStarter>();
         builder.Services.AddTransient<IWorkflowOrchestrator, WorkflowOrchestrator>();
 

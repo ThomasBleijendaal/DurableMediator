@@ -1,12 +1,17 @@
-﻿using Azure;
-using MediatR;
+﻿using MediatR;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Logging;
 
 namespace DurableMediator;
 
 public interface IWorkflowExecution
 {
     IDurableOrchestrationContext OrchestrationContext { get; }
+
+    /// <summary>
+    /// A replay safe logger for use during the execution of the workflow.
+    /// </summary>
+    ILogger ReplaySafeLogger { get; }
     
     /// <summary>
     /// Executes the given request.
@@ -67,4 +72,36 @@ public interface IWorkflowExecution
         CancellationToken token,
         int maxAttempts = 3,
         TimeSpan? delay = null);
+
+    /// <summary>
+    /// Run a sub workflow and wait for its result.
+    /// </summary>
+    /// <typeparam name="TWorkflowResponse"></typeparam>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    Task<TWorkflowResponse?> CallSubWorkflowAsync<TWorkflowResponse>(
+        IWorkflowRequest<TWorkflowResponse> request);
+
+    /// <summary>
+    /// Start a sub workflow and do not wait for its result.
+    /// </summary>
+    /// <param name="request"></param>
+    void StartWorkflow(
+        IWorkflowRequest request);
+
+    /// <summary>
+    /// Start a sub workflow and do not wait for its result.
+    /// </summary>
+    /// <typeparam name="TWorkflowResponse"></typeparam>
+    /// <param name="request"></param>
+    void StartWorkflow<TWorkflowResponse>(
+        IWorkflowRequest<TWorkflowResponse> request);
+}
+
+public interface IWorkflowExecution<TRequest> : IWorkflowExecution
+{
+    /// <summary>
+    /// The request that started the workflow execution.
+    /// </summary>
+    TRequest Request { get; }
 }

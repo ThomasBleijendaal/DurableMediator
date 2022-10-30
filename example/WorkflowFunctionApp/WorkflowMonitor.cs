@@ -10,9 +10,9 @@ internal static class WorkflowMonitor
     [FunctionName(nameof(WorkflowMonitor))]
     public static async Task<IActionResult> MonitorAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "monitor")] HttpRequestMessage req,
-        [Workflow] IWorkflowMonitor monitor)
+        [Workflow] IWorkflowManagement management)
     {
-        var recentWorkflow = await monitor.GetRecentWorkflowsAsync("", CancellationToken.None).ToListAsync(100);
+        var recentWorkflow = await management.GetRecentWorkflowsAsync("", CancellationToken.None).ToListAsync(100);
 
         return new OkObjectResult(recentWorkflow);
     }

@@ -18,7 +18,7 @@ internal class ErrorProneRequestHandler : IRequestHandler<ErrorProneRequest, Suc
     {
         _logger.LogInformation("Processing ErrorProneRequest");
 
-        var isSuccess = Random.Shared.Next(1, 10) < -1;
+        var isSuccess = Random.Shared.Next(1, 10) < 5;
 
         if (!isSuccess)
         {

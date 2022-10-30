@@ -31,7 +31,8 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
         var list = new List<FunctionMetadata>
         {
             GetActivityFunctionMetadata(ActivityFunction.SendObject, nameof(ActivityFunction.SendObjectAsync)),
-            GetActivityFunctionMetadata(ActivityFunction.SendObjectWithResponse, nameof(ActivityFunction.SendObjectWithResponseAsync))
+            GetActivityFunctionMetadata(ActivityFunction.SendObjectWithResponse, nameof(ActivityFunction.SendObjectWithResponseAsync)),
+            GetActivityFunctionMetadata(ActivityFunction.SendObjectWithCheckAndResponse, nameof(ActivityFunction.SendObjectWithCheckAndResponseAsync))
         };
 
         list.AddRange(_workflows.Select(GetOrchestratorFunctionMetadata));

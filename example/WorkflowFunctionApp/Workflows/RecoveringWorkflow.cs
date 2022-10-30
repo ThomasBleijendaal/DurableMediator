@@ -11,7 +11,7 @@ namespace WorkflowFunctionApp.Workflows;
 /// <param name="Logger"></param>
 internal record RecoveringWorkflow(ILogger<RecoveringWorkflow> Logger) : IWorkflow<RecoveringWorkflowRequest, Unit>
 {
-    public async Task<Unit> OrchestrateAsync(WorkflowExecution<RecoveringWorkflowRequest> execution)
+    public async Task<Unit> OrchestrateAsync(IWorkflowExecution<RecoveringWorkflowRequest> execution)
     {
         var logger = execution.ReplaySafeLogger;
 

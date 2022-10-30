@@ -11,7 +11,7 @@ namespace WorkflowFunctionApp.Workflows;
 /// <param name="Logger"></param>
 internal record ReusableWorkflow(ILogger<ReusableWorkflow> Logger) : IWorkflow<ReusableWorkflowRequest, ReusableWorkflowResponse>
 {
-    public async Task<ReusableWorkflowResponse> OrchestrateAsync(WorkflowExecution<ReusableWorkflowRequest> execution)
+    public async Task<ReusableWorkflowResponse> OrchestrateAsync(IWorkflowExecution<ReusableWorkflowRequest> execution)
     {
         var logger = execution.OrchestrationContext.CreateReplaySafeLogger(Logger);
 

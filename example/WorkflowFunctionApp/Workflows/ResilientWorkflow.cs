@@ -11,7 +11,7 @@ namespace WorkflowFunctionApp.Workflows;
 /// <param name="Logger"></param>
 internal record ResilientWorkflow(ILogger<ResilientWorkflow> Logger) : IWorkflow<ResilientWorkflowRequest, Unit>
 {
-    public async Task<Unit> OrchestrateAsync(WorkflowExecution<ResilientWorkflowRequest> execution)
+    public async Task<Unit> OrchestrateAsync(IWorkflowExecution<ResilientWorkflowRequest> execution)
     {
         var logger = execution.ReplaySafeLogger;
 

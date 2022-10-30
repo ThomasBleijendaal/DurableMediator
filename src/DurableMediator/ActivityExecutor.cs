@@ -31,7 +31,7 @@ internal class ActivityExecutor : IActivityExecutor
         {
             await _mediator.Send(request.Request).ConfigureAwait(false);
         }
-        catch (Exception ex) when (_logger.LogException(ex, "Activity failed"))
+        catch (Exception ex) when (_logger.LogException(ex, "Activity failed - failed to run request"))
         {
             throw;
         }
@@ -48,16 +48,63 @@ internal class ActivityExecutor : IActivityExecutor
         try
         {
             // the dynamic is needed for the dynamic dispatch of Send()
-            var result = await _mediator.Send(request.Request).ConfigureAwait(false);
-            return new MediatorResponse(result);
+            return new MediatorResponse(await _mediator.Send(request.Request).ConfigureAwait(false));
         }
-        catch (InvalidOperationException ex) when (ex.Source == "MediatR" && ex.InnerException != null && ex.InnerException.Message.Contains("No service for type 'MediatR.IRequestHandler`2["))
+        catch (InvalidOperationException ex) when (InternalsVisibleToIssue(ex))
         {
-            throw new InvalidOperationException("DurableMediator should be included in the <InternalsVisibleTo> so it can reference the internal classes", ex);
+            throw InternalsVisibleToException(ex);
         }
-        catch (Exception ex) when (_logger.LogException(ex, "Activity failed"))
+        catch (Exception ex) when (_logger.LogException(ex, "Activity failed - failed to run request"))
         {
             throw;
         }
     }
+
+    public async Task<MediatorResponse> SendObjectWithCheckAndResponseAsync(MediatorRequestWithCheckAndResponse request)
+    {
+        using var _ = _logger.BeginTracingScope(
+            _tracingProvider,
+            request.Tracing,
+            request.InstanceId,
+            (string)request.Request.GetType().Name);
+
+        try
+        {
+            // the dynamic is needed for the dynamic dispatch of Send()
+            if (await _mediator.Send(request.CheckRequest).ConfigureAwait(false) is { } result && result is not null)
+            {
+                return new MediatorResponse(result);
+            }
+        }
+        catch (InvalidOperationException ex) when (InternalsVisibleToIssue(ex))
+        {
+            throw InternalsVisibleToException(ex);
+        }
+        catch (Exception ex) when (_logger.LogException(ex, "Activity failed - failed to run check"))
+        {
+            throw;
+        }
+
+        try
+        {
+            // the dynamic is needed for the dynamic dispatch of Send()
+            return new MediatorResponse(await _mediator.Send(request.Request).ConfigureAwait(false));
+        }
+        catch (InvalidOperationException ex) when (InternalsVisibleToIssue(ex))
+        {
+            throw InternalsVisibleToException(ex);
+        }
+        catch (Exception ex) when (_logger.LogException(ex, "Activity failed - failed to run request"))
+        {
+            throw;
+        }
+    }
+
+    private static bool InternalsVisibleToIssue(InvalidOperationException ex)
+        => ex.Source == "MediatR" &&
+           ex.InnerException != null &&
+           ex.InnerException.Message.Contains("No service for type 'MediatR.IRequestHandler`2[");
+
+    private static InvalidOperationException InternalsVisibleToException(InvalidOperationException ex)
+        => new InvalidOperationException("DurableMediator should be included in the <InternalsVisibleTo> so it can reference the internal classes", ex);
 }

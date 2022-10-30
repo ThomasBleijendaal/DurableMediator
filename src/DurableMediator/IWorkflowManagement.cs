@@ -3,16 +3,16 @@
 namespace DurableMediator;
 
 /// <summary>
-/// Gets details of recently executed workflows 
+/// Gets details of recently executed workflows and allows for restarting and rewinding
 /// </summary>
-public interface IWorkflowMonitor
+public interface IWorkflowManagement
 {
     /// <summary>
     /// Gets the status of the workflow with the given instanceId.
     /// </summary>
     /// <param name="instanceId"></param>
     /// <returns></returns>
-    Task<WorkflowStatus<JToken, JToken?>?> GetWorkflowAsync(string instanceId);
+    Task<DetailedWorkflowStatus<JToken, JToken?>?> GetWorkflowAsync(string instanceId);
 
     /// <summary>
     /// Gets the status of the workflow with the given instanceId.
@@ -20,7 +20,7 @@ public interface IWorkflowMonitor
     /// <typeparam name="TRequest"></typeparam>
     /// <param name="instanceId"></param>
     /// <returns></returns>
-    Task<WorkflowStatus<TRequest>?> GetWorkflowAsync<TRequest>(string instanceId)
+    Task<DetailedWorkflowStatus<TRequest>?> GetWorkflowAsync<TRequest>(string instanceId)
         where TRequest : IWorkflowRequest;
 
     /// <summary>
@@ -30,7 +30,7 @@ public interface IWorkflowMonitor
     /// <typeparam name="TResponse"></typeparam>
     /// <param name="instanceId"></param>
     /// <returns></returns>
-    Task<WorkflowStatus<TRequest, TResponse>?> GetWorkflowAsync<TRequest, TResponse>(string instanceId)
+    Task<DetailedWorkflowStatus<TRequest, TResponse>?> GetWorkflowAsync<TRequest, TResponse>(string instanceId)
         where TRequest : IWorkflowRequest<TResponse>;
 
     /// <summary>
@@ -88,4 +88,19 @@ public interface IWorkflowMonitor
     /// <param name="token"></param>
     /// <returns></returns>
     Task<bool> HasRunningTaskAsync(string instanceIdPrefix, CancellationToken token);
+
+    /// <summary>
+    /// Restarts the workflow.
+    /// </summary>
+    /// <param name="instanceId"></param>
+    /// <returns></returns>
+    Task RestartWorkflowAsync(string instanceId);
+
+    /// <summary>
+    /// Undoes the last failed activity and resumes the workflow.
+    /// </summary>
+    /// <param name="instanceId"></param>
+    /// <returns></returns>
+    [Obsolete("Preview. Does not support workflows with retries yet")]
+    Task RewindWorkflowAsync(string instanceId);
 }
