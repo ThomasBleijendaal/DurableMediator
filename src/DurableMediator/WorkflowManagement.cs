@@ -195,15 +195,13 @@ internal class WorkflowManagement : IWorkflowManagement
             return null;
         }
 
-        var state = status.CustomStatus.ToObject<WorkflowErrorState>();
-
-        var input = status.Input.ToObject<WorkflowRequestName>();
+        var (input, state) = GetInputAndState<JToken>(status);
 
         return new DetailedWorkflowStatus<JToken, JToken?>(
-            input.WorkflowName,
+            input.Request.Value<string>(nameof(IWorkflowRequest.WorkflowName)),
             status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
             Map(status.RuntimeStatus),
-            status.Input,
+            input.Request,
             status.Output,
             status.CreatedTime,
             status.LastUpdatedTime,
@@ -219,15 +217,13 @@ internal class WorkflowManagement : IWorkflowManagement
             return null;
         }
 
-        var state = status.CustomStatus.ToObject<WorkflowErrorState>();
-
-        var input = status.Input.ToObject<TRequest>();
+        var (input, state) = GetInputAndState<TRequest>(status);
 
         return new DetailedWorkflowStatus<TRequest>(
-            input.WorkflowName,
+            input.Request.WorkflowName,
             status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
             Map(status.RuntimeStatus),
-            input,
+            input.Request,
             status.CreatedTime,
             status.LastUpdatedTime,
             state?.ExceptionMessage,
@@ -242,16 +238,14 @@ internal class WorkflowManagement : IWorkflowManagement
             return null;
         }
 
-        var state = status.CustomStatus.ToObject<WorkflowErrorState>();
-
-        var input = status.Input.ToObject<TRequest>();
+        var (input, state) = GetInputAndState<TRequest>(status);
         var output = status.Output == null ? default : status.Output.ToObject<TResponse>();
 
         return new DetailedWorkflowStatus<TRequest, TResponse>(
-            input.WorkflowName,
+            input.Request.WorkflowName,
             status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
             Map(status.RuntimeStatus),
-            input,
+            input.Request,
             output,
             status.CreatedTime,
             status.LastUpdatedTime,
@@ -266,15 +260,13 @@ internal class WorkflowManagement : IWorkflowManagement
             return null;
         }
 
-        var state = status.CustomStatus.ToObject<WorkflowErrorState>();
-
-        var input = status.Input.ToObject<WorkflowRequestName>();
+        var (input, state) = GetInputAndState<JToken>(status);
 
         return new WorkflowStatus<JToken, JToken?>(
-            input.WorkflowName,
+            input.Request.Value<string>(nameof(IWorkflowRequest.WorkflowName)),
             status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
             Map(status.RuntimeStatus),
-            status.Input,
+            input.Request,
             status.Output,
             status.CreatedTime,
             status.LastUpdatedTime,
@@ -289,15 +281,13 @@ internal class WorkflowManagement : IWorkflowManagement
             return null;
         }
 
-        var state = status.CustomStatus.ToObject<WorkflowErrorState>();
-
-        var input = status.Input.ToObject<TRequest>();
+        var (input, state) = GetInputAndState<TRequest>(status);
 
         return new WorkflowStatus<TRequest>(
-            input.WorkflowName,
+            input.Request.WorkflowName,
             status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
             Map(status.RuntimeStatus),
-            input,
+            input.Request,
             status.CreatedTime,
             status.LastUpdatedTime,
             state?.ExceptionMessage);
@@ -311,21 +301,22 @@ internal class WorkflowManagement : IWorkflowManagement
             return null;
         }
 
-        var state = status.CustomStatus.ToObject<WorkflowErrorState>();
-
-        var input = status.Input.ToObject<TRequest>();
+        var (input, state) = GetInputAndState<TRequest>(status);
         var output = status.Output == null ? default : status.Output.ToObject<TResponse>();
 
         return new WorkflowStatus<TRequest, TResponse>(
-            input.WorkflowName,
+            input.Request.WorkflowName,
             status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
             Map(status.RuntimeStatus),
-            input,
+            input.Request,
             output,
             status.CreatedTime,
             status.LastUpdatedTime,
             state?.ExceptionMessage);
     }
+    private static (WorkflowRequestWrapper<TRequest> input, WorkflowErrorState state) GetInputAndState<TRequest>(DurableOrchestrationStatus status)
+        => (status.Input.ToObject<WorkflowRequestWrapper<TRequest>>(), status.CustomStatus.ToObject<WorkflowErrorState>());
+
 
     private static WorkflowRuntimeStatus Map(OrchestrationRuntimeStatus status)
         => status switch

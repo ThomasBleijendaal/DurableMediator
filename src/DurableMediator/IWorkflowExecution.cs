@@ -19,7 +19,7 @@ public interface IWorkflowExecution
     /// <typeparam name="TResponse"></typeparam>
     /// <param name="request"></param>
     /// <returns></returns>
-    Task<TResponse> ExecuteAsync<TResponse>(
+    Task<TResponse> SendAsync<TResponse>(
         IRequest<TResponse> request);
 
     /// <summary>
@@ -33,7 +33,7 @@ public interface IWorkflowExecution
     /// <param name="delay"></param>
     /// <returns></returns>
     /// <exception cref="OrchestrationRetryException" />
-    Task<TResponse> ExecuteWithRetryAsync<TResponse>(
+    Task<TResponse> SendWithRetryAsync<TResponse>(
         IRequest<TResponse> request,
         CancellationToken token,
         int maxAttempts = 3,
@@ -47,7 +47,7 @@ public interface IWorkflowExecution
     /// <param name="token"></param>
     /// <param name="delay"></param>
     /// <returns></returns>
-    Task<TResponse> ExecuteWithDelayAsync<TResponse>(
+    Task<TResponse> SendWithDelayAsync<TResponse>(
         IRequest<TResponse> request,
         CancellationToken token,
         TimeSpan? delay = null);
@@ -66,7 +66,7 @@ public interface IWorkflowExecution
     /// <param name="delay"></param>
     /// <returns></returns>
     /// <exception cref="OrchestrationRetryException" />
-    Task<TResponse> ExecuteWithCheckAsync<TResponse>(
+    Task<TResponse> SendWithCheckAsync<TResponse>(
         IRequest<TResponse> request,
         IRequest<TResponse?> checkIfRequestApplied,
         CancellationToken token,

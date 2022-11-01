@@ -18,18 +18,18 @@ internal record BasicWorkflow(ILogger<BasicWorkflow> Logger) : IWorkflow<BasicWo
         logger.LogInformation("Start with workflow");
 
         // workflows support sequential requests
-        await execution.ExecuteAsync(new SimpleRequest(execution.Request.RequestId, "1"));
-        await execution.ExecuteAsync(new SimpleRequest(execution.Request.RequestId, "2"));
-        await execution.ExecuteAsync(new SimpleRequest(execution.Request.RequestId, "3"));
+        await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "1"));
+        await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "2"));
+        await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "3"));
 
         // workflows support parallel requests
         await Task.WhenAll(
-            execution.ExecuteAsync(new SimpleRequest(execution.Request.RequestId, "A")),
-            execution.ExecuteAsync(new SimpleRequest(execution.Request.RequestId, "B")),
-            execution.ExecuteAsync(new SimpleRequest(execution.Request.RequestId, "C")));
+            execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "A")),
+            execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "B")),
+            execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "C")));
 
         // workflows support doing parallel stuff while requests run
-        var slowTask = execution.ExecuteAsync(new SlowRequest(execution.Request.RequestId));
+        var slowTask = execution.SendAsync(new SlowRequest(execution.Request.RequestId));
 
         do
         {

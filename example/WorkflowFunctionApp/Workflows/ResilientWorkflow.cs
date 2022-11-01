@@ -17,9 +17,9 @@ internal record ResilientWorkflow(ILogger<ResilientWorkflow> Logger) : IWorkflow
 
         logger.LogInformation("Start with workflow");
 
-        await execution.ExecuteAsync(new SimpleRequest(execution.OrchestrationContext.NewGuid(), "1"));
+        await execution.SendAsync(new SimpleRequest(execution.OrchestrationContext.NewGuid(), "1"));
 
-        var result = await execution.ExecuteWithRetryAsync(
+        var result = await execution.SendWithRetryAsync(
             new ErrorProneRequest(execution.Request.DodgyResourceId), CancellationToken.None, 
             maxAttempts: 3);
 

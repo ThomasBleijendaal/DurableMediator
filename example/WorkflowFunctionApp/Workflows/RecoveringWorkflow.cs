@@ -17,7 +17,7 @@ internal record RecoveringWorkflow(ILogger<RecoveringWorkflow> Logger) : IWorkfl
 
         logger.LogInformation("Start with workflow");
 
-        await execution.ExecuteWithCheckAsync(
+        await execution.SendWithCheckAsync(
             new FailingRequest(execution.Request.FlakyResourceId),
             new CheckIfFailingRequestAppliedRequest(execution.Request.FlakyResourceId),
             CancellationToken.None,

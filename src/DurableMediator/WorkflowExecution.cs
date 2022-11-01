@@ -10,27 +10,27 @@ public record WorkflowExecution<TRequest>(
     IDurableOrchestrationContext OrchestrationContext,
     ILogger ReplaySafeLogger) : IWorkflowExecution<TRequest>, ISubWorkflowOrchestrator
 {
-    public Task<TResponse> ExecuteAsync<TResponse>(IRequest<TResponse> request)
+    public Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
         => ExecuteRequestAsync(request, 1);
 
-    public Task<TResponse> ExecuteWithRetryAsync<TResponse>(
+    public Task<TResponse> SendWithRetryAsync<TResponse>(
         IRequest<TResponse> request,
         CancellationToken token,
         int maxAttempts = 3,
         TimeSpan? delay = null)
         => ExecuteRequestAsync(request, maxAttempts, delay);
 
-    public async Task<TResponse> ExecuteWithDelayAsync<TResponse>(
+    public async Task<TResponse> SendWithDelayAsync<TResponse>(
         IRequest<TResponse> request,
         CancellationToken token,
         TimeSpan? delay = null)
     {
         await OrchestrationContext.CreateTimer(OrchestrationContext.CurrentUtcDateTime.Add(delay ?? TimeSpan.FromSeconds(1)), token);
 
-        return await ExecuteAsync(request);
+        return await SendAsync(request);
     }
 
-    public async Task<TResponse> ExecuteWithCheckAsync<TResponse>(
+    public async Task<TResponse> SendWithCheckAsync<TResponse>(
         IRequest<TResponse> request,
         IRequest<TResponse?> checkIfRequestApplied,
         CancellationToken token,
