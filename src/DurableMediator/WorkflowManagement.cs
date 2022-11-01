@@ -208,7 +208,7 @@ internal class WorkflowManagement : IWorkflowManagement
             status.CreatedTime,
             status.LastUpdatedTime,
             state?.ExceptionMessage,
-            status.History); // TODO: parse Details
+            status.History);
     }
 
     private static DetailedWorkflowStatus<TRequest>? MapDetails<TRequest>(DurableOrchestrationStatus? status)
@@ -231,7 +231,7 @@ internal class WorkflowManagement : IWorkflowManagement
             status.CreatedTime,
             status.LastUpdatedTime,
             state?.ExceptionMessage,
-            status.History); // TODO: parse Details
+            status.History);
     }
 
     private static DetailedWorkflowStatus<TRequest, TResponse>? MapDetails<TRequest, TResponse>(DurableOrchestrationStatus? status)
@@ -256,7 +256,7 @@ internal class WorkflowManagement : IWorkflowManagement
             status.CreatedTime,
             status.LastUpdatedTime,
             state?.ExceptionMessage,
-            status.History); // TODO: parse Details
+            status.History);
     }
 
     private static WorkflowStatus<JToken, JToken?>? Map(DurableOrchestrationStatus? status)
