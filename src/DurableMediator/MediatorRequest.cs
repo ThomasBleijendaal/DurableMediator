@@ -4,4 +4,7 @@ using Newtonsoft.Json;
 namespace DurableMediator;
 
 [JsonObject(ItemTypeNameHandling = TypeNameHandling.All)]
-public record MediatorRequest(IRequest<Unit> Request);
+public record MediatorRequest(
+    Tracing Tracing,
+    string InstanceId,
+    IRequest<Unit> Request);

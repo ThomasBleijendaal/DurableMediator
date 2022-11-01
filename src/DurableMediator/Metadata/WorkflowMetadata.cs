@@ -5,8 +5,13 @@ namespace DurableMediator.Metadata;
 
 internal class WorkflowMetadata
 {
+    public WorkflowMetadata(string name)
+    {
+        Name = name;
+    }
+
     [JsonProperty("name")]
-    public string Name { get; set; } = "orchestrator";
+    public string Name { get; set; }
 
     [JsonProperty("type")]
     public string Type { get; set; } = "workflow";

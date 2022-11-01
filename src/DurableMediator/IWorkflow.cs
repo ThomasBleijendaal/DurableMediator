@@ -3,5 +3,5 @@
 public interface IWorkflow<TRequest, TResponse>
     where TRequest : IWorkflowRequest<TResponse>
 {
-    Task<TResponse> OrchestrateAsync(WorkflowExecution<TRequest> execution);
+    Task<TResponse> OrchestrateAsync(IWorkflowExecution<TRequest> execution);
 }

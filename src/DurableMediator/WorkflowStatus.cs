@@ -1,4 +1,6 @@
-﻿namespace DurableMediator;
+﻿using Newtonsoft.Json.Linq;
+
+namespace DurableMediator;
 
 public record WorkflowStatus<TRequest>(
     string Name,

@@ -58,7 +58,7 @@ public class ExampleWorkflow : IWorkflow<WorkflowRequest, Unit>
         _logger = logger;
     }
 
-    public async Task<Unit> OrchestrateAsync(WorkflowExecution<WorkflowRequest> execution)
+    public async Task<Unit> OrchestrateAsync(IWorkflowExecution<WorkflowRequest> execution)
     {
         var logger = execution.OrchestrationContext.CreateReplaySafeLogger(_logger);
 

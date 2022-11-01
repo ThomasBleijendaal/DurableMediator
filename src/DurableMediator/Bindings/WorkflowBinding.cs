@@ -10,8 +10,9 @@ internal class WorkflowBinding : IExtensionConfigProvider
     {
         var rule = context.AddBindingRule<WorkflowAttribute>();
         BindToInput<WorkflowStarter>(rule);
-        BindToInput<WorkflowMonitor>(rule);
+        BindToInput<WorkflowManagement>(rule);
         BindToInput<WorkflowOrchestrator>(rule);
+        BindToInput<ActivityExecutor>(rule);
     }
 
 #pragma warning disable CS0618 // Type or member is obsolete - going to consume it anyway

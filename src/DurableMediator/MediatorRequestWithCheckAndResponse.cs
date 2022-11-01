@@ -3,7 +3,8 @@
 namespace DurableMediator;
 
 [JsonObject(ItemTypeNameHandling = TypeNameHandling.All)]
-public record MediatorRequestWithResponse(
+public record MediatorRequestWithCheckAndResponse(
     Tracing Tracing,
     string InstanceId,
-    dynamic Request);
+    dynamic Request,
+    dynamic CheckRequest);

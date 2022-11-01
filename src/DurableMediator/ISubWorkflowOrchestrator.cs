@@ -15,4 +15,10 @@ public interface ISubWorkflowOrchestrator
     /// </summary>
     /// <param name="request"></param>
     void StartWorkflow(IWorkflowRequest request);
+
+    /// <summary>
+    /// Triggers an orchestration of the given workflow without waiting for the result.
+    /// </summary>
+    /// <param name="request"></param>
+    void StartWorkflow<TWorkflowResponse>(IWorkflowRequest<TWorkflowResponse> request);
 }

@@ -9,6 +9,7 @@
     },
     "logLevel": {
       "default": "Warning",
+      "DurableMediator": "Information",
       "WorkflowFunctionApp": "Information"
     }
   },
