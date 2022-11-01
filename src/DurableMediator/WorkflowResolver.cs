@@ -1,5 +1,4 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace DurableMediator;
 
@@ -15,9 +14,6 @@ internal class WorkflowResolver : IWorkflowResolver
         _serviceProvider = serviceProvider;
         _workflowDescriptors = workflowDescriptors;
     }
-
-    public EntityId GetEntityId(IDurableOrchestrationContext context)
-        => new("DurableMediatorEntity", context.InstanceId);
 
     public IWorkflowWrapper GetWorkflow(string workflowRequestName)
     {
