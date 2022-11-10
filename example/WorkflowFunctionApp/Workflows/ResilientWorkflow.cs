@@ -8,8 +8,7 @@ namespace WorkflowFunctionApp.Workflows;
 /// <summary>
 /// The resilient workflow demonstrates how to handle requests that are prone to fail.
 /// </summary>
-/// <param name="Logger"></param>
-internal record ResilientWorkflow(ILogger<ResilientWorkflow> Logger) : IWorkflow<ResilientWorkflowRequest, Unit>
+internal record ResilientWorkflow() : IWorkflow<ResilientWorkflowRequest, Unit>
 {
     public async Task<Unit> OrchestrateAsync(IWorkflowExecution<ResilientWorkflowRequest> execution)
     {

@@ -8,8 +8,7 @@ namespace WorkflowFunctionApp.Workflows;
 /// <summary>
 /// The basic workflow demonstrates how to perform multiple requests in a single workflow. 
 /// </summary>
-/// <param name="Logger"></param>
-internal record BasicWorkflow(ILogger<BasicWorkflow> Logger) : IWorkflow<BasicWorkflowRequest, Unit>
+internal record BasicWorkflow() : IWorkflow<BasicWorkflowRequest, Unit>
 {
     public async Task<Unit> OrchestrateAsync(IWorkflowExecution<BasicWorkflowRequest> execution)
     {

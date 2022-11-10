@@ -8,8 +8,7 @@ namespace WorkflowFunctionApp.Workflows;
 /// <summary>
 /// The recovering workflow demonstrates how to handle requests that can 'successfully fail' and require a check if they actually succeeded before retrying.
 /// </summary>
-/// <param name="Logger"></param>
-internal record RecoveringWorkflow(ILogger<RecoveringWorkflow> Logger) : IWorkflow<RecoveringWorkflowRequest, Unit>
+internal record RecoveringWorkflow() : IWorkflow<RecoveringWorkflowRequest, Unit>
 {
     public async Task<Unit> OrchestrateAsync(IWorkflowExecution<RecoveringWorkflowRequest> execution)
     {
