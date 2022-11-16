@@ -2,10 +2,10 @@
 
 namespace DurableMediator.Analyzer.Tests;
 
-internal class BasicWorkflowAnalyzerTests
+internal class RetryWorkflowAnalyzerTests
 {
     [Test]
-    public void TestBasicWorkflow()
+    public void TestRetryWorkflow()
     {
         GeneratorTestHelper.TestGeneratedCode("""
             using DurableMediator;
@@ -21,31 +21,31 @@ internal class BasicWorkflowAnalyzerTests
             };
 
             [AnalyzeFlow]
-            public record BasicWorkflow() : IWorkflow<BasicWorkflowRequest, Unit>
+            public record RetryWorkflow() : IWorkflow<BasicWorkflowRequest, Unit>
             {
                 public async Task<Unit> OrchestrateAsync(IWorkflowExecution<BasicWorkflowRequest> execution)
                 {
                     // workflows support sequential requests
-                    await execution.SendAsync(new SimpleRequest(execution.Request.Id, "1"));
+                    await execution.SendWithRetryAsync(new SimpleRequest(execution.Request.Id, "1"), CancellationToken.None, 1);
 
                     return Unit.Value;
                 }
             }
             """,
             """
-            public class BasicWorkflowMetadataProvider : IWorkflowMetadataProvider
+            public class RetryWorkflowMetadataProvider : IWorkflowMetadataProvider
             {
                 public WorkflowMetadata GetFlow()
                 {
                     return new WorkflowMetadata
                     {
-                        Type = typeof(BasicWorkflow),
+                        Type = typeof(RetryWorkflow),
                         Steps = new List<WorkflowSteps>
                         {
                             new WorkflowSend
                             {
                                 Request = typeof(SimpleRequest),
-                                Retries = 0
+                                Retries = 1
                             }
                         }
                     }
@@ -58,7 +58,7 @@ internal class BasicWorkflowAnalyzerTests
             {
                 public IServiceCollection AddGeneratedMetadataProviders(this IServiceCollection services)
                 {
-                    services.AddSingleton<IWorkflowMetadataProvider, BasicWorkflowMetadataProvider>();
+                    services.AddSingleton<IWorkflowMetadataProvider, RetryWorkflowMetadataProvider>();
                     return services;
                 }
             }
@@ -67,14 +67,12 @@ internal class BasicWorkflowAnalyzerTests
     }
 
     [Test]
-    public void TestNamespacedBasicWorkflow()
+    public void TestImplicitRetryWorkflow()
     {
         GeneratorTestHelper.TestGeneratedCode("""
             using DurableMediator;
             using DurableMediator.Analyzer;
             using MediatR;
-
-            namespace Test;
 
             public record SimpleRequest(Guid Id, string Description) : IRequest<BasicResponse>;
             public record BasicResponse(Guid Id) : IRequest<BasicResponse>;
@@ -85,31 +83,31 @@ internal class BasicWorkflowAnalyzerTests
             };
 
             [AnalyzeFlow]
-            public record BasicWorkflow() : IWorkflow<BasicWorkflowRequest, Unit>
+            public record RetryWorkflow() : IWorkflow<BasicWorkflowRequest, Unit>
             {
                 public async Task<Unit> OrchestrateAsync(IWorkflowExecution<BasicWorkflowRequest> execution)
                 {
                     // workflows support sequential requests
-                    await execution.SendAsync(new SimpleRequest(execution.Request.Id, "1"));
+                    await execution.SendWithRetryAsync(new SimpleRequest(execution.Request.Id, "1"), CancellationToken.None);
 
                     return Unit.Value;
                 }
             }
             """,
             """
-            public class BasicWorkflowMetadataProvider : IWorkflowMetadataProvider
+            public class RetryWorkflowMetadataProvider : IWorkflowMetadataProvider
             {
                 public WorkflowMetadata GetFlow()
                 {
                     return new WorkflowMetadata
                     {
-                        Type = typeof(Test.BasicWorkflow),
+                        Type = typeof(RetryWorkflow),
                         Steps = new List<WorkflowSteps>
                         {
                             new WorkflowSend
                             {
-                                Request = typeof(Test.SimpleRequest),
-                                Retries = 0
+                                Request = typeof(SimpleRequest),
+                                Retries = 3
                             }
                         }
                     }
@@ -122,7 +120,7 @@ internal class BasicWorkflowAnalyzerTests
             {
                 public IServiceCollection AddGeneratedMetadataProviders(this IServiceCollection services)
                 {
-                    services.AddSingleton<IWorkflowMetadataProvider, BasicWorkflowMetadataProvider>();
+                    services.AddSingleton<IWorkflowMetadataProvider, RetryWorkflowMetadataProvider>();
                     return services;
                 }
             }

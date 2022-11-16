@@ -24,7 +24,7 @@ namespace DurableMediator.Analyzer.Tests
         public async Task<Unit> OrchestrateAsync(IWorkflowExecution<BasicWorkflowRequest> execution)
         {
             // workflows support sequential requests
-            await execution.SendAsync(new SimpleRequest(execution.Request.Id, "1"));
+            await execution.SendWithRetryAsync(new SimpleRequest(execution.Request.Id, "1"), CancellationToken.None, 1);
 
             return Unit.Value;
         }
