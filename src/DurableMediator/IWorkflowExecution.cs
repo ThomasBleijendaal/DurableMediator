@@ -11,6 +11,7 @@ public interface IWorkflowExecution
     /// <summary>
     /// A replay safe logger for use during the execution of the workflow.
     /// </summary>
+    // TODO: add option to log to execution history 
     ILogger ReplaySafeLogger { get; }
     
     /// <summary>

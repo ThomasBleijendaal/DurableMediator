@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using DurableMediator.History;
 using MediatR;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs.Script.Description;
@@ -25,6 +26,8 @@ public static class FunctionsHostBuilderExtensions
         builder.Services.AddTransient<IActivityExecutor, ActivityExecutor>();
 
         builder.Services.AddTransient<ITracingProvider, DefaultTracingProvider>();
+
+        builder.Services.AddTransient<HistoryClient>();
 
         builder.Services.AddMediatR(handlerAssemblyMarkerTypes);
 

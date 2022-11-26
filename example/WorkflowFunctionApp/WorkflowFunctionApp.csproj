@@ -16,8 +16,6 @@
     <PackageReference Include="Seq.Extensions.Logging" Version="6.1.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\DurableMediator.Analyzer\DurableMediator.Analyzer.csproj" OutputItemType="Analyzer" />
-    <ProjectReference Include="..\..\src\DurableMediator.ManagementExtensions\DurableMediator.ManagementExtensions.csproj" />
     <ProjectReference Include="..\..\src\DurableMediator\DurableMediator.csproj" />
   </ItemGroup>
   

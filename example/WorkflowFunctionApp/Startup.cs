@@ -1,6 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 using DurableMediator;
-using DurableMediator.ManagementExtensions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,8 +13,6 @@ public class Startup : FunctionsStartup
 {
     public override void Configure(IFunctionsHostBuilder builder)
     {
-        var config = builder.GetContext().Configuration;
-
         builder.Services.AddLogging(logging =>
         {
             logging.AddConsole();
@@ -24,8 +21,5 @@ public class Startup : FunctionsStartup
         });
 
         builder.AddDurableMediator(typeof(Startup));
-        builder.AddDurableMediatorManagement();
-        
-        builder.Services.AddGeneratedMetadataProviders();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using DurableMediator.History;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.ContextImplementations;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
@@ -10,37 +11,48 @@ namespace DurableMediator;
 internal class WorkflowManagement : IWorkflowManagement
 {
     private readonly WorkflowConfiguration _config;
+    private readonly HistoryClient _historyClient;
     private readonly IDurableClientFactory _durableClientFactory;
 
     public WorkflowManagement(
         IOptions<WorkflowConfiguration> config,
+        HistoryClient historyClient,
         IDurableClientFactory durableClientFactory)
     {
         _config = config.Value;
+        _historyClient = historyClient;
         _durableClientFactory = durableClientFactory;
     }
 
     public async Task<DetailedWorkflowStatus<JToken, JToken?>?> GetWorkflowAsync(string instanceId)
     {
-        var status = await GetClient().GetStatusAsync(Constants.WorkflowIdPrefix + instanceId, showHistory: true).ConfigureAwait(false);
+        var history = await _historyClient.GetDurableOrchestrationStatusAsync(Constants.WorkflowIdPrefix + instanceId);
 
-        return MapDetails(status);
+        // TODO: move to private
+        var status = await GetClient().GetStatusAsync(Constants.WorkflowIdPrefix + instanceId).ConfigureAwait(false);
+
+        return MapDetails(status, history);
     }
 
     public async Task<DetailedWorkflowStatus<TRequest>?> GetWorkflowAsync<TRequest>(string instanceId)
         where TRequest : IWorkflowRequest
     {
-        var status = await GetOrchestrationStatusAsync<TRequest>(instanceId, showHistory: true).ConfigureAwait(false);
+        // TODO: move to private
+        var history = await _historyClient.GetDurableOrchestrationStatusAsync(Constants.WorkflowIdPrefix + instanceId);
 
-        return MapDetails<TRequest>(status);
+        var status = await GetOrchestrationStatusAsync<TRequest>(instanceId, false).ConfigureAwait(false);
+
+        return MapDetails<TRequest>(status, history);
     }
 
     public async Task<DetailedWorkflowStatus<TRequest, TResponse>?> GetWorkflowAsync<TRequest, TResponse>(string instanceId)
         where TRequest : IWorkflowRequest<TResponse>
     {
-        var status = await GetOrchestrationStatusAsync<TRequest>(instanceId, showHistory: true).ConfigureAwait(false);
+        var history = await _historyClient.GetDurableOrchestrationStatusAsync(Constants.WorkflowIdPrefix + instanceId);
 
-        return MapDetails<TRequest, TResponse>(status);
+        var status = await GetOrchestrationStatusAsync<TRequest>(instanceId, false).ConfigureAwait(false);
+
+        return MapDetails<TRequest, TResponse>(status, history);
     }
 
     public async Task<TRequest?> GetWorkflowDataAsync<TRequest>(string instanceId)
@@ -188,7 +200,7 @@ internal class WorkflowManagement : IWorkflowManagement
         while (createdTimeFrom > maxTimeFrom && !token.IsCancellationRequested);
     }
 
-    private static DetailedWorkflowStatus<JToken, JToken?>? MapDetails(DurableOrchestrationStatus? status)
+    private static DetailedWorkflowStatus<JToken, JToken?>? MapDetails(DurableOrchestrationStatus? status, JArray? history)
     {
         if (status == null)
         {
@@ -206,10 +218,10 @@ internal class WorkflowManagement : IWorkflowManagement
             status.CreatedTime,
             status.LastUpdatedTime,
             state?.ExceptionMessage,
-            status.History);
+            history);
     }
 
-    private static DetailedWorkflowStatus<TRequest>? MapDetails<TRequest>(DurableOrchestrationStatus? status)
+    private static DetailedWorkflowStatus<TRequest>? MapDetails<TRequest>(DurableOrchestrationStatus? status, JArray? history)
         where TRequest : IWorkflowRequest
     {
         if (status == null)
@@ -227,10 +239,10 @@ internal class WorkflowManagement : IWorkflowManagement
             status.CreatedTime,
             status.LastUpdatedTime,
             state?.ExceptionMessage,
-            status.History);
+            history);
     }
 
-    private static DetailedWorkflowStatus<TRequest, TResponse>? MapDetails<TRequest, TResponse>(DurableOrchestrationStatus? status)
+    private static DetailedWorkflowStatus<TRequest, TResponse>? MapDetails<TRequest, TResponse>(DurableOrchestrationStatus? status, JArray? history)
         where TRequest : IWorkflowRequest<TResponse>
     {
         if (status == null)
@@ -250,7 +262,7 @@ internal class WorkflowManagement : IWorkflowManagement
             status.CreatedTime,
             status.LastUpdatedTime,
             state?.ExceptionMessage,
-            status.History);
+            history);
     }
 
     private static WorkflowStatus<JToken, JToken?>? Map(DurableOrchestrationStatus? status)

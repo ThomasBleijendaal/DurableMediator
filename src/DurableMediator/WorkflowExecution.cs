@@ -51,7 +51,7 @@ public record WorkflowExecution<TRequest>(
         
         if (response == null)
         {
-            throw new Exception("Received an empty response");
+            throw new InvalidOperationException("Received an empty response");
         }
 
         return (TResponse)response.Response;
@@ -88,7 +88,7 @@ public record WorkflowExecution<TRequest>(
 
         if (response == null)
         {
-            throw new Exception("Received an empty response");
+            throw new InvalidOperationException("Received an empty response");
         }
 
         return (TResponse)response.Response;
