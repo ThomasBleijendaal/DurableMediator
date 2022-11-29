@@ -20,6 +20,8 @@ public class Startup : FunctionsStartup
             logging.AddSeq();
         });
 
-        builder.AddDurableMediator(typeof(Startup));
+        builder.AddDurableMediator(
+            useExperimentalEntityExecution: true,
+            typeof(Startup));
     }
 }

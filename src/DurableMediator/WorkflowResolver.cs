@@ -1,7 +1,4 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask.ContextImplementations;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask.Options;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace DurableMediator;
 
@@ -25,17 +22,11 @@ internal class WorkflowResolver : IWorkflowResolver
             throw new InvalidOperationException($"Cannot find workflow associated with {workflowRequestName}");
         }
 
-        var config = _serviceProvider.GetRequiredService<IOptions<WorkflowConfiguration>>().Value;
-
         var workflowType = typeof(IWorkflow<,>).MakeGenericType(descriptor.Request, descriptor.Response);
         var wrapperType = typeof(WorkflowWrapper<,>).MakeGenericType(descriptor.Request, descriptor.Response);
 
         var wrapper = Activator.CreateInstance(
             wrapperType,
-            _serviceProvider.GetRequiredService<IDurableClientFactory>().CreateClient(new DurableClientOptions
-            {
-                TaskHub = config.HubName
-            }),
             _serviceProvider.GetRequiredService(workflowType),
             _serviceProvider.GetRequiredService<ITracingProvider>())
             ?? throw new InvalidOperationException("Failed to create workflow wrapper");

@@ -34,6 +34,16 @@ public static class FunctionsHostBuilderExtensions
         AddWorkflowClasses(builder.Services, handlerAssemblyMarkerTypes.Select(x => x.GetTypeInfo().Assembly));
     }
 
+    public static void AddDurableMediator(
+        this IFunctionsHostBuilder builder,
+        bool useExperimentalEntityExecution,
+        params Type[] handlerAssemblyMarkerTypes)
+    {
+        WorkflowConfiguration.UseExperimentalEntityExecution = useExperimentalEntityExecution;
+
+        AddDurableMediator(builder, handlerAssemblyMarkerTypes);
+    }
+
     private static void AddWorkflowClasses(IServiceCollection service, IEnumerable<Assembly> assembliesToScan)
     {
         var filteredClasses = assembliesToScan.SelectMany(x => x.DefinedTypes)

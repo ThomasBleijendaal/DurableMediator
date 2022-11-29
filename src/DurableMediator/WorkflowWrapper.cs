@@ -35,10 +35,15 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
         try
         {
             var response = await _workflow.OrchestrateAsync(
-                new EntityExecution<TRequest>(
-                    requestWrapper.Request,
-                    context,
-                    replaySafeLogger));
+                (WorkflowConfiguration.UseExperimentalEntityExecution)
+                    ? new EntityExecution<TRequest>(
+                        requestWrapper.Request,
+                        context,
+                        replaySafeLogger)
+                    : new ActivityExecution<TRequest>(
+                        requestWrapper.Request,
+                        context,
+                        replaySafeLogger));
 
             if (response is TResponse workflowResponse)
             {
