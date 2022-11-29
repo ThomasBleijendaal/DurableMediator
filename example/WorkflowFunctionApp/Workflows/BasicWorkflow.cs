@@ -23,9 +23,7 @@ internal record BasicWorkflow() : IWorkflow<BasicWorkflowRequest, Unit>
 
         // workflows support parallel requests
         await Task.WhenAll(
-            execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "A")),
-            execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "B")),
-            execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "C")));
+            Enumerable.Range(0, 26).Select(i => execution.SendAsync(new SimpleRequest(execution.Request.RequestId, Convert.ToString((char)('A' + i))))));
 
         // workflows support doing parallel stuff while requests run
         var slowTask = execution.SendAsync(new SlowRequest(execution.Request.RequestId));
