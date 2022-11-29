@@ -5,8 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace DurableMediator;
 
-public record WorkflowExecution<TRequest>(
+internal record WorkflowExecution<TRequest>(
     TRequest Request,
+    IDurableMediator Mediator,
     IDurableOrchestrationContext OrchestrationContext,
     ILogger ReplaySafeLogger) : IWorkflowExecution<TRequest>, ISubWorkflowOrchestrator
 {
@@ -79,12 +80,22 @@ public record WorkflowExecution<TRequest>(
     {
         if (typeof(TResponse) == typeof(Unit))
         {
-            await SendObjectAsync(ActivityFunction.SendObject, (IRequest<Unit>)request, maxAttempts, delay);
+            await Mediator.SendObjectAsync(new MediatorRequest(
+                CurrentInput.Tracing, 
+                WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId), 
+                (IRequest<Unit>)request));
+
+            // await SendObjectAsync(ActivityFunction.SendObject, (IRequest<Unit>)request, maxAttempts, delay);
 
             return default!;
         }
 
-        var response = await SendObjectAsync(ActivityFunction.SendObjectWithResponse, request, maxAttempts, delay);
+        var response = await Mediator.SendObjectWithResponseAsync(new MediatorRequestWithResponse(
+                CurrentInput.Tracing,
+                WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
+                request));
+
+        // var response = await SendObjectAsync(ActivityFunction.SendObjectWithResponse, request, maxAttempts, delay);
 
         if (response == null)
         {

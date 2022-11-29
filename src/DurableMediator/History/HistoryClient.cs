@@ -51,6 +51,14 @@ internal class HistoryClient
                             historyItem.Remove("Version");
                             ConvertInputToJToken(historyItem);
                             break;
+                        case EventType.EventSent:
+                            historyItem.Remove("Version");
+                            ConvertInputToJToken(historyItem, "Request");
+                            break;
+                        case EventType.EventRaised:
+                            historyItem.Remove("Version");
+                            ConvertOutputToJToken(historyItem, "Response");
+                            break;
                         case EventType.TaskCompleted:
                         case EventType.TaskFailed:
                             AddScheduledEventDataAndAggregate(ref eventMapper, "TaskScheduled", historyItem, indexList);
@@ -124,10 +132,32 @@ internal class HistoryClient
         return jArray;
     }
 
-    // TODO: inputs are not saved when using activities 
     private static void ConvertInputToJToken(JObject jsonObject)
     {
         jsonObject["Input"] = ParseToJToken((string?)jsonObject["Input"]);
+    }
+
+    private static void ConvertInputToJToken(JObject jsonObject, string inputName)
+    {
+        var input = ParseToJToken((string?)jsonObject["Input"]);
+
+        var wrappedRequest = JObject.Parse(input?.Value<string>("input"));
+
+        var request = wrappedRequest?[inputName];
+
+        jsonObject["Input"] = request;
+    }
+
+    private static void ConvertOutputToJToken(JObject jsonObject, string inputName)
+    {
+        var input = ParseToJToken((string?)jsonObject["Input"]);
+
+        var wrappedRequest = JObject.Parse(input?.Value<string>("result"));
+
+        var request = wrappedRequest?[inputName];
+
+        jsonObject.Remove("Input");
+        jsonObject["Result"] = request;
     }
 
     private static void ConvertOutputToJToken(JObject jsonObject)

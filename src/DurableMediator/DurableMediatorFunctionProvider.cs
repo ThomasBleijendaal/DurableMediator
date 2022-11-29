@@ -30,6 +30,8 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
     {
         var list = new List<FunctionMetadata>
         {
+            GetDurableMediatorFunctionMetadata(),
+
             GetActivityFunctionMetadata(ActivityFunction.SendObject, nameof(ActivityFunction.SendObjectAsync)),
             GetActivityFunctionMetadata(ActivityFunction.SendObjectWithResponse, nameof(ActivityFunction.SendObjectWithResponseAsync)),
             GetActivityFunctionMetadata(ActivityFunction.SendObjectWithCheckAndResponse, nameof(ActivityFunction.SendObjectWithCheckAndResponseAsync))
@@ -59,6 +61,25 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
         functionMetadata.Bindings.Add(
             BindingMetadata.Create(
                 JObject.FromObject(new WorkflowMetadata("executor"))));
+
+        return functionMetadata;
+    }
+
+    private FunctionMetadata GetDurableMediatorFunctionMetadata()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var functionMetadata = new FunctionMetadata()
+        {
+            Name = nameof(DurableMediatorEntity),
+            FunctionDirectory = null,
+            ScriptFile = $"assembly:{assembly.FullName}",
+            EntryPoint = $"{assembly.GetName().Name}.Functions.{nameof(DurableMediatorFunction)}.{nameof(DurableMediatorFunction.RunAsync)}",
+            Language = "DotNetAssembly"
+        };
+
+        functionMetadata.Bindings.Add(
+            BindingMetadata.Create(
+                JObject.FromObject(new EntityTriggerMetadata())));
 
         return functionMetadata;
     }
