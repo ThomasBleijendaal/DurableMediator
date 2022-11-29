@@ -80,6 +80,7 @@ internal record ActivityExecution<TRequest>(
     }
 
     private async Task<MediatorResponse> SendObjectAsync<TResponse>(string activity, IRequest<TResponse> request, int maxAttempts, TimeSpan? delay)
+        // TODO: fallback to no retry when max attempts = 0
         => await OrchestrationContext.CallActivityWithRetryAsync<MediatorResponse>(activity,
             new RetryOptions(DelayOrDefault(delay), maxAttempts)
             {
