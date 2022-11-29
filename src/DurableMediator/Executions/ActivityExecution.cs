@@ -3,13 +3,12 @@ using MediatR;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 
-namespace DurableMediator;
+namespace DurableMediator.Executions;
 
-internal record WorkflowExecution<TRequest>(
+internal record ActivityExecution<TRequest>(
     TRequest Request,
-    IDurableMediator Mediator,
     IDurableOrchestrationContext OrchestrationContext,
-    ILogger ReplaySafeLogger) : IWorkflowExecution<TRequest>, ISubWorkflowOrchestrator
+    ILogger ReplaySafeLogger) : BaseExecution<TRequest>(OrchestrationContext), IWorkflowExecution<TRequest>
 {
     public Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
         => ExecuteRequestAsync(request, 1);
@@ -49,7 +48,7 @@ internal record WorkflowExecution<TRequest>(
                 WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
                 request,
                 checkIfRequestApplied));
-        
+
         if (response == null)
         {
             throw new InvalidOperationException("Received an empty response");
@@ -58,21 +57,6 @@ internal record WorkflowExecution<TRequest>(
         return (TResponse)response.Response;
     }
 
-    public Task<TWorkflowResponse?> CallSubWorkflowAsync<TWorkflowResponse>(IWorkflowRequest<TWorkflowResponse> request)
-        => OrchestrationContext.CallSubOrchestratorAsync<TWorkflowResponse?>(request.GetType().Name, WorkflowInstanceIdHelper.GetId(request), ForwardRequestWrapper(request));
-
-    public void StartWorkflow(IWorkflowRequest request)
-        => OrchestrationContext.StartNewOrchestration(request.GetType().Name, ForwardRequestWrapper(request), WorkflowInstanceIdHelper.GetId(request));
-
-    public void StartWorkflow<TWorkflowResponse>(IWorkflowRequest<TWorkflowResponse> request)
-        => OrchestrationContext.StartNewOrchestration(request.GetType().Name, ForwardRequestWrapper(request), WorkflowInstanceIdHelper.GetId(request));
-
-    private WorkflowRequestWrapper<TSubWorkflowRequest> ForwardRequestWrapper<TSubWorkflowRequest>(TSubWorkflowRequest request)
-        => new WorkflowRequestWrapper<TSubWorkflowRequest>(CurrentInput.Tracing, request);
-
-    private WorkflowRequestWrapper<TRequest> CurrentInput
-        => OrchestrationContext.GetInput<WorkflowRequestWrapper<TRequest>>();
-
     private async Task<TResponse> ExecuteRequestAsync<TResponse>(
         IRequest<TResponse> request,
         int maxAttempts,
@@ -80,22 +64,12 @@ internal record WorkflowExecution<TRequest>(
     {
         if (typeof(TResponse) == typeof(Unit))
         {
-            await Mediator.SendObjectAsync(new MediatorRequest(
-                CurrentInput.Tracing, 
-                WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId), 
-                (IRequest<Unit>)request));
-
-            // await SendObjectAsync(ActivityFunction.SendObject, (IRequest<Unit>)request, maxAttempts, delay);
+            await SendObjectAsync(ActivityFunction.SendObject, (IRequest<Unit>)request, maxAttempts, delay);
 
             return default!;
         }
 
-        var response = await Mediator.SendObjectWithResponseAsync(new MediatorRequestWithResponse(
-                CurrentInput.Tracing,
-                WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
-                request));
-
-        // var response = await SendObjectAsync(ActivityFunction.SendObjectWithResponse, request, maxAttempts, delay);
+        var response = await SendObjectAsync(ActivityFunction.SendObjectWithResponse, request, maxAttempts, delay);
 
         if (response == null)
         {
@@ -115,7 +89,4 @@ internal record WorkflowExecution<TRequest>(
                 CurrentInput.Tracing,
                 WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
                 request));
-
-    private static TimeSpan DelayOrDefault(TimeSpan? delay)
-        => delay ?? TimeSpan.FromMilliseconds(Random.Shared.Next(500, 800));
 }

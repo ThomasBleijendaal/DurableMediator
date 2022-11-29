@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+﻿using DurableMediator.Executions;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 
 namespace DurableMediator;
@@ -6,16 +7,13 @@ namespace DurableMediator;
 internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
     where TRequest : class, IWorkflowRequest<TResponse>
 {
-    private readonly IDurableClient _durableClient;
     private readonly IWorkflow<TRequest, TResponse> _workflow;
     private readonly ITracingProvider _tracingProvider;
 
     public WorkflowWrapper(
-        IDurableClient durableClient,
         IWorkflow<TRequest, TResponse> workflow,
         ITracingProvider tracingProvider)
     {
-        _durableClient = durableClient;
         _workflow = workflow;
         _tracingProvider = tracingProvider;
     }
@@ -34,15 +32,11 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
             requestWrapper.Request.InstanceId,
             context.Name);
 
-        var durableMediatorId = new EntityId(nameof(DurableMediatorEntity), requestWrapper.Request.InstanceId);
-        var durableMediator = context.CreateEntityProxy<IDurableMediator>(durableMediatorId);
-
         try
         {
             var response = await _workflow.OrchestrateAsync(
-                new WorkflowExecution<TRequest>(
+                new EntityExecution<TRequest>(
                     requestWrapper.Request,
-                    durableMediator,
                     context,
                     replaySafeLogger));
 
@@ -56,10 +50,6 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
             context.SetCustomStatus(new WorkflowErrorState(ex.Message));
 
             throw;
-        }
-        finally
-        {
-            _durableClient.PurgeInstanceHistoryAsync(durableMediatorId.ToString());
         }
     }
 }
