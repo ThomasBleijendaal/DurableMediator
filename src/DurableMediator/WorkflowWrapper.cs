@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+﻿using DurableMediator.Executions;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 
 namespace DurableMediator;
@@ -34,14 +35,19 @@ internal class WorkflowWrapper<TRequest, TResponse> : IWorkflowWrapper
         try
         {
             var response = await _workflow.OrchestrateAsync(
-                new WorkflowExecution<TRequest>(
-                    requestWrapper.Request,
-                    context,
-                    replaySafeLogger));
+                (WorkflowConfiguration.UseExperimentalEntityExecution)
+                    ? new EntityExecution<TRequest>(
+                        requestWrapper.Request,
+                        context,
+                        replaySafeLogger)
+                    : new ActivityExecution<TRequest>(
+                        requestWrapper.Request,
+                        context,
+                        replaySafeLogger));
 
             if (response is TResponse workflowResponse)
             {
-                context.SetOutput(workflowResponse); 
+                context.SetOutput(workflowResponse);
             }
         }
         catch (Exception ex) when (replaySafeLogger.LogException(ex, "Orchestration failed"))

@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using DurableMediator.History;
 using MediatR;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs.Script.Description;
@@ -22,13 +23,25 @@ public static class FunctionsHostBuilderExtensions
         builder.Services.AddTransient<IWorkflowStarter, WorkflowStarter>();
         builder.Services.AddTransient<IWorkflowOrchestrator, WorkflowOrchestrator>();
 
-        builder.Services.AddTransient<IActivityExecutor, ActivityExecutor>();
+        builder.Services.AddTransient<IDurableMediator, DurableMediator>();
 
         builder.Services.AddTransient<ITracingProvider, DefaultTracingProvider>();
+
+        builder.Services.AddTransient<HistoryClient>();
 
         builder.Services.AddMediatR(handlerAssemblyMarkerTypes);
 
         AddWorkflowClasses(builder.Services, handlerAssemblyMarkerTypes.Select(x => x.GetTypeInfo().Assembly));
+    }
+
+    public static void AddDurableMediator(
+        this IFunctionsHostBuilder builder,
+        bool useExperimentalEntityExecution,
+        params Type[] handlerAssemblyMarkerTypes)
+    {
+        WorkflowConfiguration.UseExperimentalEntityExecution = useExperimentalEntityExecution;
+
+        AddDurableMediator(builder, handlerAssemblyMarkerTypes);
     }
 
     private static void AddWorkflowClasses(IServiceCollection service, IEnumerable<Assembly> assembliesToScan)

@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
+using WorkflowFunctionApp.Exceptions;
 using WorkflowFunctionApp.Requests;
 using WorkflowFunctionApp.Responses;
 
@@ -30,7 +31,7 @@ internal class CheckIfFailingRequestAppliedRequestHandler : IRequestHandler<Chec
         {
             _logger.LogWarning("Failed to check if FailingRequest applied");
 
-            throw new InvalidOperationException();
+            throw new RequestException("Check failed");
         }
 
         _logger.LogInformation("FailingRequest applied");

@@ -1,5 +1,4 @@
 ﻿using DurableMediator;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using WorkflowFunctionApp.Responses;
 
@@ -8,12 +7,11 @@ namespace WorkflowFunctionApp.Workflows;
 /// <summary>
 /// The reusable workflow demonstrates how to return data from workflows, so other workflows can use this workflow in their own process.
 /// </summary>
-/// <param name="Logger"></param>
-internal record ReusableWorkflow(ILogger<ReusableWorkflow> Logger) : IWorkflow<ReusableWorkflowRequest, ReusableWorkflowResponse>
+internal record ReusableWorkflow() : IWorkflow<ReusableWorkflowRequest, ReusableWorkflowResponse>
 {
     public async Task<ReusableWorkflowResponse> OrchestrateAsync(IWorkflowExecution<ReusableWorkflowRequest> execution)
     {
-        var logger = execution.OrchestrationContext.CreateReplaySafeLogger(Logger);
+        var logger = execution.ReplaySafeLogger;
 
         logger.LogInformation("Start with workflow");
 

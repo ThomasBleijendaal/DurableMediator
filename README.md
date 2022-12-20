@@ -107,3 +107,16 @@ and even await their responses, making it easy to compose workflows.
 ## Examples
 
 See the WorkflowFunctionApp in the example folder for more examples.
+
+## Preview: Activity history and durable entities
+
+Use `builder.AddDurableMediator(useExperimentalEntityExecution: true, typeof(Startup));` to enable entity execution
+which allows for:
+
+- Enable capturing request and response data to and from durable mediator invocations. This allows 
+`IWorkflowManagement.GetWorkflowAsync` to output that data, making it possible to access the exact requests 
+and responses after the workflow has completed.
+
+The downside of this way feature is that every workflow will create a durable entity history record. This record
+will be stored in the orchestration history storage (under `@durablemediator@{instanceId}`) and needs to be cleared
+using `IDurableEntityClient.CleanEntityStorageAsync`.

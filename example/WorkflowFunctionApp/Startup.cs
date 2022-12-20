@@ -13,8 +13,6 @@ public class Startup : FunctionsStartup
 {
     public override void Configure(IFunctionsHostBuilder builder)
     {
-        var config = builder.GetContext().Configuration;
-
         builder.Services.AddLogging(logging =>
         {
             logging.AddConsole();
@@ -22,6 +20,8 @@ public class Startup : FunctionsStartup
             logging.AddSeq();
         });
 
-        builder.AddDurableMediator(typeof(Startup));
+        builder.AddDurableMediator(
+            useExperimentalEntityExecution: true,
+            typeof(Startup));
     }
 }

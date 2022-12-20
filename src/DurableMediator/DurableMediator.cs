@@ -3,16 +3,16 @@ using Microsoft.Extensions.Logging;
 
 namespace DurableMediator;
 
-internal class ActivityExecutor : IActivityExecutor
+internal class DurableMediator : IDurableMediator
 {
     private readonly IMediator _mediator;
     private readonly ITracingProvider _tracingProvider;
-    private readonly ILogger<ActivityExecutor> _logger;
+    private readonly ILogger<DurableMediator> _logger;
 
-    public ActivityExecutor(
+    public DurableMediator(
         IMediator mediator,
         ITracingProvider tracingProvider,
-        ILogger<ActivityExecutor> logger)
+        ILogger<DurableMediator> logger)
     {
         _mediator = mediator;
         _tracingProvider = tracingProvider;
@@ -22,10 +22,10 @@ internal class ActivityExecutor : IActivityExecutor
     public async Task SendObjectAsync(MediatorRequest request)
     {
         using var _ = _logger.BeginTracingScope(
-            _tracingProvider,
-            request.Tracing,
-            request.InstanceId,
-            request.Request.GetType().Name);
+             _tracingProvider,
+             request.Tracing,
+             request.InstanceId,
+             request.Request.GetType().Name);
 
         try
         {

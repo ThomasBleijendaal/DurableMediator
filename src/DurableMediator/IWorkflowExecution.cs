@@ -74,28 +74,24 @@ public interface IWorkflowExecution
         TimeSpan? delay = null);
 
     /// <summary>
-    /// Run a sub workflow and wait for its result.
+    /// Starts a sub orchestration of the given workflow and waits for the result.
     /// </summary>
     /// <typeparam name="TWorkflowResponse"></typeparam>
     /// <param name="request"></param>
     /// <returns></returns>
-    Task<TWorkflowResponse?> CallSubWorkflowAsync<TWorkflowResponse>(
-        IWorkflowRequest<TWorkflowResponse> request);
+    Task<TWorkflowResponse?> CallSubWorkflowAsync<TWorkflowResponse>(IWorkflowRequest<TWorkflowResponse> request);
 
     /// <summary>
-    /// Start a sub workflow and do not wait for its result.
+    /// Triggers an orchestration of the given workflow without waiting for the result.
     /// </summary>
     /// <param name="request"></param>
-    void StartWorkflow(
-        IWorkflowRequest request);
+    void StartWorkflow(IWorkflowRequest request);
 
     /// <summary>
-    /// Start a sub workflow and do not wait for its result.
+    /// Triggers an orchestration of the given workflow without waiting for the result.
     /// </summary>
-    /// <typeparam name="TWorkflowResponse"></typeparam>
     /// <param name="request"></param>
-    void StartWorkflow<TWorkflowResponse>(
-        IWorkflowRequest<TWorkflowResponse> request);
+    void StartWorkflow<TWorkflowResponse>(IWorkflowRequest<TWorkflowResponse> request);
 }
 
 public interface IWorkflowExecution<TRequest> : IWorkflowExecution
