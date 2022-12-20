@@ -26,10 +26,9 @@ internal class WorkflowManagement : IWorkflowManagement
 
     public async Task<DetailedWorkflowStatus<JToken, JToken?>?> GetWorkflowAsync(string instanceId)
     {
-        var history = await _historyClient.GetDurableOrchestrationStatusAsync(Constants.WorkflowIdPrefix + instanceId);
+        var history = await _historyClient.GetDurableOrchestrationStatusAsync(instanceId).ConfigureAwait(false);
 
-        // TODO: move to private
-        var status = await GetClient().GetStatusAsync(Constants.WorkflowIdPrefix + instanceId).ConfigureAwait(false);
+        var status = await GetClient().GetStatusAsync(instanceId).ConfigureAwait(false);
 
         return MapDetails(status, history);
     }
@@ -37,8 +36,7 @@ internal class WorkflowManagement : IWorkflowManagement
     public async Task<DetailedWorkflowStatus<TRequest>?> GetWorkflowAsync<TRequest>(string instanceId)
         where TRequest : IWorkflowRequest
     {
-        // TODO: move to private
-        var history = await _historyClient.GetDurableOrchestrationStatusAsync(Constants.WorkflowIdPrefix + instanceId);
+       var history = await _historyClient.GetDurableOrchestrationStatusAsync(instanceId).ConfigureAwait(false);
 
         var status = await GetOrchestrationStatusAsync<TRequest>(instanceId, false).ConfigureAwait(false);
 
@@ -48,7 +46,7 @@ internal class WorkflowManagement : IWorkflowManagement
     public async Task<DetailedWorkflowStatus<TRequest, TResponse>?> GetWorkflowAsync<TRequest, TResponse>(string instanceId)
         where TRequest : IWorkflowRequest<TResponse>
     {
-        var history = await _historyClient.GetDurableOrchestrationStatusAsync(Constants.WorkflowIdPrefix + instanceId);
+        var history = await _historyClient.GetDurableOrchestrationStatusAsync(instanceId).ConfigureAwait(false);
 
         var status = await GetOrchestrationStatusAsync<TRequest>(instanceId, false).ConfigureAwait(false);
 
@@ -127,7 +125,7 @@ internal class WorkflowManagement : IWorkflowManagement
 
         var result = await client.ListInstancesAsync(new OrchestrationStatusQueryCondition
         {
-            InstanceIdPrefix = Constants.WorkflowIdPrefix + instanceIdPrefix,
+            InstanceIdPrefix = instanceIdPrefix,
             RuntimeStatus = new[]
             {
                 OrchestrationRuntimeStatus.Pending,
@@ -146,7 +144,7 @@ internal class WorkflowManagement : IWorkflowManagement
 
     private async Task<DurableOrchestrationStatus?> GetOrchestrationStatusAsync<TRequest>(string instanceId, bool showHistory)
     {
-        var status = await GetClient().GetStatusAsync(Constants.WorkflowIdPrefix + instanceId, 
+        var status = await GetClient().GetStatusAsync(instanceId, 
             showHistory: showHistory, 
             showHistoryOutput: showHistory, 
             showInput: showHistory).ConfigureAwait(false);
@@ -174,7 +172,7 @@ internal class WorkflowManagement : IWorkflowManagement
             {
                 CreatedTimeFrom = createdTimeFrom,
                 CreatedTimeTo = createdTimeFrom.AddDays(1),
-                InstanceIdPrefix = Constants.WorkflowIdPrefix + instanceIdPrefix,
+                InstanceIdPrefix = instanceIdPrefix,
                 PageSize = 100,
                 ContinuationToken = continueToken
             }, token).ConfigureAwait(false);
@@ -211,7 +209,7 @@ internal class WorkflowManagement : IWorkflowManagement
 
         return new DetailedWorkflowStatus<JToken, JToken?>(
             input.Request.Value<string>(nameof(IWorkflowRequest.WorkflowName)),
-            status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
+            status.InstanceId,
             Map(status.RuntimeStatus),
             input.Request,
             status.Output,
@@ -233,7 +231,7 @@ internal class WorkflowManagement : IWorkflowManagement
 
         return new DetailedWorkflowStatus<TRequest>(
             input.Request.WorkflowName,
-            status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
+            status.InstanceId,
             Map(status.RuntimeStatus),
             input.Request,
             status.CreatedTime,
@@ -255,7 +253,7 @@ internal class WorkflowManagement : IWorkflowManagement
 
         return new DetailedWorkflowStatus<TRequest, TResponse>(
             input.Request.WorkflowName,
-            status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
+            status.InstanceId,
             Map(status.RuntimeStatus),
             input.Request,
             output,
@@ -276,7 +274,7 @@ internal class WorkflowManagement : IWorkflowManagement
 
         return new WorkflowStatus<JToken, JToken?>(
             input.Request.Value<string>(nameof(IWorkflowRequest.WorkflowName)),
-            status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
+            status.InstanceId,
             Map(status.RuntimeStatus),
             input.Request,
             status.Output,
@@ -297,7 +295,7 @@ internal class WorkflowManagement : IWorkflowManagement
 
         return new WorkflowStatus<TRequest>(
             input.Request.WorkflowName,
-            status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
+            status.InstanceId,
             Map(status.RuntimeStatus),
             input.Request,
             status.CreatedTime,
@@ -318,7 +316,7 @@ internal class WorkflowManagement : IWorkflowManagement
 
         return new WorkflowStatus<TRequest, TResponse>(
             input.Request.WorkflowName,
-            status.InstanceId.Replace(Constants.WorkflowIdPrefix, ""),
+            status.InstanceId,
             Map(status.RuntimeStatus),
             input.Request,
             output,
@@ -346,16 +344,11 @@ internal class WorkflowManagement : IWorkflowManagement
 
     public async Task RestartWorkflowAsync(string instanceId)
     {
-        await GetClient().RestartAsync(Constants.WorkflowIdPrefix + instanceId, restartWithNewInstanceId: false);
+        await GetClient().RestartAsync(instanceId, restartWithNewInstanceId: false);
     }
 
     public async Task RewindWorkflowAsync(string instanceId)
     {
-        await GetClient().RewindAsync(Constants.WorkflowIdPrefix + instanceId, $"Rewound by {nameof(WorkflowManagement)}");
-    }
-
-    private class WorkflowRequestName : IWorkflowRequestName
-    {
-        public string WorkflowName { get; set; } = string.Empty;
+        await GetClient().RewindAsync(instanceId, $"Rewound by {nameof(WorkflowManagement)}");
     }
 }

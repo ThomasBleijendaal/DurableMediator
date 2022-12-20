@@ -113,7 +113,6 @@ internal class HistoryClient
             }
         }
 
-
         return historyArray;
     }
 

@@ -23,7 +23,7 @@ public static class FunctionsHostBuilderExtensions
         builder.Services.AddTransient<IWorkflowStarter, WorkflowStarter>();
         builder.Services.AddTransient<IWorkflowOrchestrator, WorkflowOrchestrator>();
 
-        builder.Services.AddTransient<IActivityExecutor, ActivityExecutor>();
+        builder.Services.AddTransient<IDurableMediator, DurableMediator>();
 
         builder.Services.AddTransient<ITracingProvider, DefaultTracingProvider>();
 

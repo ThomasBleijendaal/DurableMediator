@@ -45,7 +45,7 @@ internal record ActivityExecution<TRequest>(
             },
             new MediatorRequestWithCheckAndResponse(
                 CurrentInput.Tracing,
-                WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
+                OrchestrationContext.InstanceId,
                 request,
                 checkIfRequestApplied));
 
@@ -79,15 +79,20 @@ internal record ActivityExecution<TRequest>(
         return (TResponse)response.Response;
     }
 
-    private async Task<MediatorResponse> SendObjectAsync<TResponse>(string activity, IRequest<TResponse> request, int maxAttempts, TimeSpan? delay)
-        // TODO: fallback to no retry when max attempts = 0
-        => await OrchestrationContext.CallActivityWithRetryAsync<MediatorResponse>(activity,
-            new RetryOptions(DelayOrDefault(delay), maxAttempts)
-            {
-                BackoffCoefficient = 2
-            },
-            new MediatorRequestWithResponse(
-                CurrentInput.Tracing,
-                WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
-                request));
+    private Task<MediatorResponse> SendObjectAsync<TResponse>(string activity, IRequest<TResponse> request, int maxAttempts, TimeSpan? delay)
+        => maxAttempts == 1 
+            ? OrchestrationContext.CallActivityAsync<MediatorResponse>(activity,
+                new MediatorRequestWithResponse(
+                    CurrentInput.Tracing,
+                    OrchestrationContext.InstanceId,
+                    request))
+            : OrchestrationContext.CallActivityWithRetryAsync<MediatorResponse>(activity,
+                new RetryOptions(DelayOrDefault(delay), maxAttempts)
+                {
+                    BackoffCoefficient = 2
+                },
+                new MediatorRequestWithResponse(
+                    CurrentInput.Tracing,
+                    OrchestrationContext.InstanceId,
+                    request));
 }

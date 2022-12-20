@@ -28,14 +28,18 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
 
     private List<FunctionMetadata> GetFunctionMetadataList()
     {
-        var list = new List<FunctionMetadata>
-        {
-            GetDurableMediatorFunctionMetadata(),
+        var list = new List<FunctionMetadata>();
 
-            GetActivityFunctionMetadata(ActivityFunction.SendObject, nameof(ActivityFunction.SendObjectAsync)),
-            GetActivityFunctionMetadata(ActivityFunction.SendObjectWithResponse, nameof(ActivityFunction.SendObjectWithResponseAsync)),
-            GetActivityFunctionMetadata(ActivityFunction.SendObjectWithCheckAndResponse, nameof(ActivityFunction.SendObjectWithCheckAndResponseAsync))
-        };
+        if (WorkflowConfiguration.UseExperimentalEntityExecution)
+        {
+            list.Add(GetDurableMediatorFunctionMetadata());
+        }
+        else
+        {
+            list.Add(GetActivityFunctionMetadata(ActivityFunction.SendObject, nameof(ActivityFunction.SendObjectAsync)));
+            list.Add(GetActivityFunctionMetadata(ActivityFunction.SendObjectWithResponse, nameof(ActivityFunction.SendObjectWithResponseAsync)));
+            list.Add(GetActivityFunctionMetadata(ActivityFunction.SendObjectWithCheckAndResponse, nameof(ActivityFunction.SendObjectWithCheckAndResponseAsync)));
+        } 
 
         list.AddRange(_workflows.Select(GetOrchestratorFunctionMetadata));
 
@@ -70,7 +74,7 @@ internal class DurableMediatorFunctionProvider : IFunctionProvider
         var assembly = Assembly.GetExecutingAssembly();
         var functionMetadata = new FunctionMetadata()
         {
-            Name = nameof(DurableMediatorEntity),
+            Name = nameof(DurableMediator),
             FunctionDirectory = null,
             ScriptFile = $"assembly:{assembly.FullName}",
             EntryPoint = $"{assembly.GetName().Name}.Functions.{nameof(DurableMediatorFunction)}.{nameof(DurableMediatorFunction.RunAsync)}",

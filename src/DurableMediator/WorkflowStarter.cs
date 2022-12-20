@@ -29,7 +29,7 @@ internal class WorkflowStarter : IWorkflowStarter
             _tracingProvider.GetTracing(),
             input);
 
-        await client.StartNewAsync(input.GetType().Name, WorkflowInstanceIdHelper.GetId(input), wrappedInput).ConfigureAwait(false);
+        await client.StartNewAsync(input.GetType().Name, input.InstanceId, wrappedInput).ConfigureAwait(false);
 
         return new WorkflowStartResult(input.InstanceId);
     }

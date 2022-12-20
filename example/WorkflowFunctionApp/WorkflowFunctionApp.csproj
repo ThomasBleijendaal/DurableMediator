@@ -17,8 +17,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\DurableMediator\DurableMediator.csproj" />
-    <InternalsVisibleTo Include="WorkflowFunctionApp.Tests"/>
-    <InternalsVisibleTo Include="DynamicProxyGenAssembly2"/>
+    <InternalsVisibleTo Include="WorkflowFunctionApp.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
   
   <ItemGroup>

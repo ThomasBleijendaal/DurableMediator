@@ -1,5 +1,4 @@
-﻿using DurableMediator.Functions;
-using MediatR;
+﻿using MediatR;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 
@@ -10,9 +9,9 @@ internal record EntityExecution<TRequest>(
     IDurableOrchestrationContext OrchestrationContext,
     ILogger ReplaySafeLogger) : BaseExecution<TRequest>(OrchestrationContext), IWorkflowExecution<TRequest>
 {
-    private IDurableMediator Mediator 
+    private IDurableMediator Mediator
         => OrchestrationContext.CreateEntityProxy<IDurableMediator>(
-            new EntityId(nameof(DurableMediatorEntity), OrchestrationContext.InstanceId));
+            new EntityId(nameof(DurableMediator), OrchestrationContext.InstanceId));
 
     public Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
         => ExecuteRequestAsync(request, 1);
@@ -41,18 +40,13 @@ internal record EntityExecution<TRequest>(
         int maxAttempts = 3,
         TimeSpan? delay = null)
     {
-        // TODO: replace with Mediator
-        var response = await OrchestrationContext.CallActivityWithRetryAsync<MediatorResponse>(
-            ActivityFunction.SendObjectWithCheckAndResponse,
-            new RetryOptions(DelayOrDefault(delay), maxAttempts)
-            {
-                BackoffCoefficient = 2
-            },
+        var response = await RetryAsync(() => Mediator.SendObjectWithCheckAndResponseAsync(
             new MediatorRequestWithCheckAndResponse(
                 CurrentInput.Tracing,
-                WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
+                OrchestrationContext.InstanceId,
                 request,
-                checkIfRequestApplied));
+                checkIfRequestApplied)),
+            maxAttempts, delay);
 
         if (response == null)
         {
@@ -64,24 +58,32 @@ internal record EntityExecution<TRequest>(
 
     private async Task<TResponse> ExecuteRequestAsync<TResponse>(
         IRequest<TResponse> request,
-        // TODO: implement
         int maxAttempts,
         TimeSpan? delay = null)
     {
         if (typeof(TResponse) == typeof(Unit))
         {
-            await Mediator.SendObjectAsync(new MediatorRequest(
-                CurrentInput.Tracing,
-                WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
-                (IRequest<Unit>)request));
+            await RetryAsync(async () =>
+            {
+                await Mediator.SendObjectAsync(
+                    new MediatorRequest(
+                        CurrentInput.Tracing,
+                        OrchestrationContext.InstanceId,
+                        (IRequest<Unit>)request));
+
+                return Unit.Value;
+            }, 
+            maxAttempts, delay);
 
             return default!;
         }
 
-        var response = await Mediator.SendObjectWithResponseAsync(new MediatorRequestWithResponse(
-            CurrentInput.Tracing,
-            WorkflowInstanceIdHelper.GetOriginalInstanceId(OrchestrationContext.InstanceId),
-            request));
+        var response = await RetryAsync(() => Mediator.SendObjectWithResponseAsync(
+            new MediatorRequestWithResponse(
+                CurrentInput.Tracing,
+                OrchestrationContext.InstanceId,
+                request)), 
+            maxAttempts, delay);
 
         if (response == null)
         {
@@ -89,5 +91,35 @@ internal record EntityExecution<TRequest>(
         }
 
         return (TResponse)response.Response;
+    }
+
+    private async Task<TResult> RetryAsync<TResult>(Func<Task<TResult>> action, int maxAttempts, TimeSpan? delay)
+    {
+        List<Exception>? exceptions = null;
+
+        var attempt = 0;
+        do
+        {
+            try
+            {
+                return await action.Invoke();
+            }
+            catch (Exception ex)
+            {
+                exceptions ??= new();
+                exceptions.Add(ex);
+
+                if (++attempt < maxAttempts)
+                {
+                    await OrchestrationContext.CreateTimer(OrchestrationContext.CurrentUtcDateTime.Add(delay ?? TimeSpan.FromSeconds(1)), CancellationToken.None);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        } while (true);
+
+        throw new AggregateException("Failed to execute step", exceptions ?? Enumerable.Empty<Exception>());
     }
 }

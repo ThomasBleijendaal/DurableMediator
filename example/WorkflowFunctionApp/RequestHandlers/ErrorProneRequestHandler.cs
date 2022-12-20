@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
+using WorkflowFunctionApp.Exceptions;
 using WorkflowFunctionApp.Requests;
 using WorkflowFunctionApp.Responses;
 
@@ -24,7 +25,7 @@ internal class ErrorProneRequestHandler : IRequestHandler<ErrorProneRequest, Suc
         {
             _logger.LogWarning("ErrorProneRequest failed!");
 
-            throw new InvalidOperationException("Error prone handler failed");
+            throw new RequestException("Error prone handler failed");
         }
         else
         {

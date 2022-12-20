@@ -3,17 +3,16 @@ using Microsoft.Extensions.Logging;
 
 namespace DurableMediator;
 
-// TODO: merge with ActivityExecutor
-internal class DurableMediatorEntity : IDurableMediator
+internal class DurableMediator : IDurableMediator
 {
     private readonly IMediator _mediator;
     private readonly ITracingProvider _tracingProvider;
-    private readonly ILogger<ActivityExecutor> _logger;
+    private readonly ILogger<DurableMediator> _logger;
 
-    public DurableMediatorEntity(
+    public DurableMediator(
         IMediator mediator,
         ITracingProvider tracingProvider,
-        ILogger<ActivityExecutor> logger)
+        ILogger<DurableMediator> logger)
     {
         _mediator = mediator;
         _tracingProvider = tracingProvider;
@@ -45,6 +44,46 @@ internal class DurableMediatorEntity : IDurableMediator
             request.Tracing,
             request.InstanceId,
             (string)request.Request.GetType().Name);
+
+        try
+        {
+            // the dynamic is needed for the dynamic dispatch of Send()
+            return new MediatorResponse(await _mediator.Send(request.Request).ConfigureAwait(false));
+        }
+        catch (InvalidOperationException ex) when (InternalsVisibleToIssue(ex))
+        {
+            throw InternalsVisibleToException(ex);
+        }
+        catch (Exception ex) when (_logger.LogException(ex, "Activity failed - failed to run request"))
+        {
+            throw;
+        }
+    }
+
+    public async Task<MediatorResponse> SendObjectWithCheckAndResponseAsync(MediatorRequestWithCheckAndResponse request)
+    {
+        using var _ = _logger.BeginTracingScope(
+            _tracingProvider,
+            request.Tracing,
+            request.InstanceId,
+            (string)request.Request.GetType().Name);
+
+        try
+        {
+            // the dynamic is needed for the dynamic dispatch of Send()
+            if (await _mediator.Send(request.CheckRequest).ConfigureAwait(false) is { } result && result is not null)
+            {
+                return new MediatorResponse(result);
+            }
+        }
+        catch (InvalidOperationException ex) when (InternalsVisibleToIssue(ex))
+        {
+            throw InternalsVisibleToException(ex);
+        }
+        catch (Exception ex) when (_logger.LogException(ex, "Activity failed - failed to run check"))
+        {
+            throw;
+        }
 
         try
         {
