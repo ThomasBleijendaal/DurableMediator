@@ -220,7 +220,7 @@ internal class HistoryClient
         }
     }
 
-    private class EventIndexDateMapping
+    private sealed class EventIndexDateMapping
     {
         public int Index { get; set; }
 
