@@ -27,7 +27,6 @@ public class BasicWorkflowTests
         _executionMock.SetupGet(x => x.Request).Returns(new BasicWorkflowRequest(_requestId));
         _executionMock.SetupGet(x => x.OrchestrationContext).Returns(new Mock<IDurableOrchestrationContext>().Object);
 
-
         var sequence = new MockSequence();
 
         SetupSimpleRequest(sequence, "1");
