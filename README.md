@@ -1,5 +1,13 @@
 # Durable Mediator
 
+## Azure Functions Out-Of-Process
+
+[![#](https://img.shields.io/nuget/vpre/DurableMediator.OutOfProcess?style=flat-square)](https://www.nuget.org/packages/DurableMediator.OutOfProcess)
+
+[Readme for Azure Functions Out-Of-Process (.NET 7 and higher)](README.oop.md).
+
+## Azure Functions In-Process
+
 [![#](https://img.shields.io/nuget/v/DurableMediator?style=flat-square)](https://www.nuget.org/packages/DurableMediator)
 
 Durable Mediator is an extension to the Durable Task library which allows for running MediatR Requests as activities in orchestrations without any complex ceremony.

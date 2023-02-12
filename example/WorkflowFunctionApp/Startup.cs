@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WorkflowFunctionApp;
+using WorkflowHandlers.Requests;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 [assembly: InternalsVisibleTo("DurableMediator")]
@@ -22,6 +23,7 @@ public class Startup : FunctionsStartup
 
         builder.AddDurableMediator(
             useExperimentalEntityExecution: true,
-            typeof(Startup));
+            typeof(Startup),
+            typeof(SimpleRequest));
     }
 }

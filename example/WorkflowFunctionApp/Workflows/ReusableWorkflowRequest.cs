@@ -1,5 +1,5 @@
 ﻿using DurableMediator;
-using WorkflowFunctionApp.Responses;
+using WorkflowHandlers.Responses;
 
 namespace WorkflowFunctionApp.Workflows;
 

@@ -1,6 +1,6 @@
 ﻿using DurableMediator;
 using Microsoft.Extensions.Logging;
-using WorkflowFunctionApp.Responses;
+using WorkflowHandlers.Responses;
 
 namespace WorkflowFunctionApp.Workflows;
 

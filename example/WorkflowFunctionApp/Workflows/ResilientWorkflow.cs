@@ -1,7 +1,7 @@
 ﻿using DurableMediator;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using WorkflowFunctionApp.Requests;
+using WorkflowHandlers.Requests;
 
 namespace WorkflowFunctionApp.Workflows;
 
@@ -19,7 +19,7 @@ internal record ResilientWorkflow() : IWorkflow<ResilientWorkflowRequest, Unit>
         await execution.SendAsync(new SimpleRequest(execution.OrchestrationContext.NewGuid(), "1"));
 
         var result = await execution.SendWithRetryAsync(
-            new ErrorProneRequest(execution.Request.DodgyResourceId), CancellationToken.None, 
+            new ErrorProneRequest(execution.Request.DodgyResourceId), CancellationToken.None,
             maxAttempts: 3);
 
         logger.LogInformation("Workflow done with id {id}", result.Id);
