@@ -1,7 +1,12 @@
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 
 var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults()
+    .ConfigureFunctionsWorkerDefaults((context, builder) =>
+    {
+        
+        
+
+    })
     .Build();
 
 host.Run();

@@ -1,8 +1,14 @@
 ﻿using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Converters;
+using Microsoft.Azure.Functions.Worker.Core;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OutOfProcessFunctionApp;
+
+[assembly: WorkerExtensionStartup(typeof(TestExtension))]
 
 namespace OutOfProcessFunctionApp;
 
@@ -45,5 +51,26 @@ public class Function1
         var logger = executionContext.GetLogger(nameof(SayHelloUntyped));
         logger.LogInformation("Saying hello to {name}", cityName);
         return $"Hello, {cityName}!";
+    }
+}
+
+public class TestExtension : WorkerExtensionStartup
+{
+    public override void Configure(IFunctionsWorkerApplicationBuilder applicationBuilder)
+    {
+        Console.WriteLine("YEAH");
+
+        applicationBuilder.Services.Configure<WorkerOptions>((workerOption) =>
+        {
+            workerOption.InputConverters.Register<InputBinding>();
+        });
+    }
+}
+
+public class InputBinding : IInputConverter
+{
+    public ValueTask<ConversionResult> ConvertAsync(ConverterContext context)
+    {
+        throw new NotImplementedException();
     }
 }
