@@ -4,6 +4,10 @@
 
 Durable Mediator is an extension to the Durable Task library which allows for running MediatR Requests as activities in orchestrations without any complex ceremony.
 
+## Blog post
+
+https://medium.com/tripleuniverse/how-to-effectively-work-with-stateful-processes-in-a-stateless-environment-ae4d014d5606
+
 ## Getting started
 
 To get started with running orchestrations which call MediatR Requests as activities, which are called "Workflows", follow these steps:
