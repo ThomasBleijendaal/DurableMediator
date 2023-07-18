@@ -20,6 +20,7 @@
     <PackageProjectUrl>https://github.com/ThomasBleijendaal/DurableMediator</PackageProjectUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageVersion>$(PackageVersion)</PackageVersion>
+    <ProjectUISubcaption>In-Process / .NET 6.0</ProjectUISubcaption>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
