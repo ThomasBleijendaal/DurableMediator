@@ -3,6 +3,7 @@
 namespace DurableMediator.OutOfProcess;
 
 public abstract class Workflow<TRequest, TResponse> : TaskOrchestrator<TRequest, TResponse>
+    where TRequest : IWorkflowRequest<TResponse>
 {
     public override sealed async Task<TResponse> RunAsync(TaskOrchestrationContext context, TRequest input)
     {

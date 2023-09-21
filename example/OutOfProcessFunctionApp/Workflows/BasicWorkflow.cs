@@ -2,7 +2,6 @@
 using MediatR;
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
-using WorkflowFunctionApp.Workflows;
 using WorkflowHandlers.Requests;
 
 namespace OutOfProcessFunctionApp.Workflows;
@@ -50,9 +49,9 @@ public class BasicWorkflow : Workflow<BasicWorkflowRequest, Unit>
         while (true);
 
         // workflows can trigger other workflows and wait for their completion
-        //var workflowResult = await execution.CallSubWorkflowAsync(new ReusableWorkflowRequest(Guid.NewGuid()));
+        var workflowResult = await execution.CallSubWorkflowAsync(new ReusableWorkflowRequest(Guid.NewGuid()));
 
-        // logger.LogInformation("Result from {subWorkflow}", workflowResult?.Description);
+        logger.LogInformation("Result from {subWorkflow}", workflowResult?.Description);
 
         // workflows can also trigger other workflows and not wait their completion
         //execution.StartWorkflow(new ReusableWorkflowRequest(Guid.NewGuid()));

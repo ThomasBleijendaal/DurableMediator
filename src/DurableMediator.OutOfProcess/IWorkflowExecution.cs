@@ -16,4 +16,7 @@ public interface IWorkflowExecution<TRequest>
     TRequest Request { get; }
 
     Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request);
+
+    Task<TWorkflowResponse?> CallSubWorkflowAsync<TWorkflowRequest, TWorkflowResponse>(TWorkflowRequest request)
+        where TWorkflowRequest : IWorkflowRequest<TWorkflowResponse>;
 }

@@ -43,4 +43,10 @@ public class OrchestratorExecutor<TRequest, TResponse> : IWorkflowExecution<TReq
         return ((JsonElement)response.Response).Deserialize<TResponse>()
             ?? throw new InvalidOperationException("Cannot deserialize response");
     }
+
+    public Task<TWorkflowResponse?> CallSubWorkflowAsync<TWorkflowRequest, TWorkflowResponse>(TWorkflowRequest request)
+        where TWorkflowRequest : IWorkflowRequest<TWorkflowResponse>
+    {
+        return _context.CallSubOrchestratorAsync<TWorkflowResponse?>(TWorkflowRequest.Workflow.Name, request, null);
+    }
 }

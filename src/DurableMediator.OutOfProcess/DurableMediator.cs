@@ -14,6 +14,7 @@ namespace DurableMediator.OutOfProcess;
  * - all the execution specials
  * - merge stuff into abstractions package
  * - make dependency collection extension
+ * - internalize everything that needs to be internal (also look at example projects)
  */
 
 [DurableTask(nameof(DurableMediator))]

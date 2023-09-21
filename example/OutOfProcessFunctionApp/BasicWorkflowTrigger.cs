@@ -3,7 +3,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
-using WorkflowFunctionApp.Workflows;
+using OutOfProcessFunctionApp.Workflows;
 
 namespace OutOfProcessFunctionApp;
 
