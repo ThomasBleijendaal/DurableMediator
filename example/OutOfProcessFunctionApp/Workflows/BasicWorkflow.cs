@@ -26,38 +26,38 @@ public class BasicWorkflow : Workflow<BasicWorkflowRequest, Unit>
         await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "2"));
         await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "3"));
 
-        //// workflows support parallel requests
-        //await Task.WhenAll(Enumerable.Range('A', 26).Select(i =>
-        //    execution.SendAsync(new SimpleRequest(execution.Request.RequestId, Convert.ToString((char)i)))));
+        // workflows support parallel requests
+        await Task.WhenAll(Enumerable.Range('A', 26).Select(i =>
+            execution.SendAsync(new SimpleRequest(execution.Request.RequestId, Convert.ToString((char)i)))));
 
-        //// workflows support doing parallel stuff while requests run
-        //var slowTask = execution.SendAsync(new SlowRequest(execution.Request.RequestId));
+        // workflows support doing parallel stuff while requests run
+        var slowTask = execution.SendAsync(new SlowRequest(execution.Request.RequestId));
 
-        //do
-        //{
-        //    await execution.OrchestrationContext.CreateTimer(execution.OrchestrationContext.CurrentUtcDateTime.AddSeconds(1), new { Message = "Hi" }, CancellationToken.None);
-        //    if (slowTask.IsCompleted)
-        //    {
-        //        logger.LogInformation("Slow task done");
+        do
+        {
+            await execution.OrchestrationContext.CreateTimer(execution.OrchestrationContext.CurrentUtcDateTime.AddSeconds(1), CancellationToken.None);
+            if (slowTask.IsCompleted)
+            {
+                logger.LogInformation("Slow task done");
 
-        //        break;
-        //    }
-        //    else
-        //    {
-        //        logger.LogInformation("Slow task still pending");
-        //    }
-        //}
-        //while (true);
+                break;
+            }
+            else
+            {
+                logger.LogInformation("Slow task still pending");
+            }
+        }
+        while (true);
 
-        //// workflows can trigger other workflows and wait for their completion
+        // workflows can trigger other workflows and wait for their completion
         //var workflowResult = await execution.CallSubWorkflowAsync(new ReusableWorkflowRequest(Guid.NewGuid()));
 
-        //logger.LogInformation("Result from {subWorkflow}", workflowResult?.Description);
+        // logger.LogInformation("Result from {subWorkflow}", workflowResult?.Description);
 
-        //// workflows can also trigger other workflows and not wait their completion
+        // workflows can also trigger other workflows and not wait their completion
         //execution.StartWorkflow(new ReusableWorkflowRequest(Guid.NewGuid()));
 
-        //logger.LogInformation("Workflow done");
+        logger.LogInformation("Workflow done");
 
         return Unit.Value;
     }

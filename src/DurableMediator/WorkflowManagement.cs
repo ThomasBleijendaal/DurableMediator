@@ -36,7 +36,7 @@ internal class WorkflowManagement : IWorkflowManagement
     public async Task<DetailedWorkflowStatus<TRequest>?> GetWorkflowAsync<TRequest>(string instanceId)
         where TRequest : IWorkflowRequest
     {
-       var history = await _historyClient.GetDurableOrchestrationStatusAsync(instanceId).ConfigureAwait(false);
+        var history = await _historyClient.GetDurableOrchestrationStatusAsync(instanceId).ConfigureAwait(false);
 
         var status = await GetOrchestrationStatusAsync<TRequest>(instanceId, false).ConfigureAwait(false);
 
@@ -144,9 +144,9 @@ internal class WorkflowManagement : IWorkflowManagement
 
     private async Task<DurableOrchestrationStatus?> GetOrchestrationStatusAsync<TRequest>(string instanceId, bool showHistory)
     {
-        var status = await GetClient().GetStatusAsync(instanceId, 
-            showHistory: showHistory, 
-            showHistoryOutput: showHistory, 
+        var status = await GetClient().GetStatusAsync(instanceId,
+            showHistory: showHistory,
+            showHistoryOutput: showHistory,
             showInput: showHistory).ConfigureAwait(false);
         if (status == null || !IsInvocationOfType<TRequest>(status))
         {
@@ -177,7 +177,7 @@ internal class WorkflowManagement : IWorkflowManagement
                 ContinuationToken = continueToken
             }, token).ConfigureAwait(false);
 
-            day.AddRange(result.DurableOrchestrationState.Where(selector));
+            day.AddRange(result.DurableOrchestrationState.Where(x => !x.InstanceId.StartsWith('@')).Where(selector));
 
             if (!string.IsNullOrWhiteSpace(result.ContinuationToken))
             {
@@ -326,7 +326,6 @@ internal class WorkflowManagement : IWorkflowManagement
     }
     private static (WorkflowRequestWrapper<TRequest> input, WorkflowErrorState state) GetInputAndState<TRequest>(DurableOrchestrationStatus status)
         => (status.Input.ToObject<WorkflowRequestWrapper<TRequest>>(), status.CustomStatus.ToObject<WorkflowErrorState>());
-
 
     private static WorkflowRuntimeStatus Map(OrchestrationRuntimeStatus status)
         => status switch
