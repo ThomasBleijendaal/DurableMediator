@@ -18,6 +18,10 @@
     <PackageReference Include="Microsoft.DurableTask.Generators" Version="1.0.0-preview.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\DurableMediator.OutOfProcess\DurableMediator.OutOfProcess.csproj" />
+    <ProjectReference Include="..\WorkflowHandlers\WorkflowHandlers.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

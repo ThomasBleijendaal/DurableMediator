@@ -1,8 +1,9 @@
-﻿using MediatR;
+﻿using DurableMediator.OutOfProcess;
+using MediatR;
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
-using OutOfProcessFunctionApp.Requests;
 using WorkflowFunctionApp.Workflows;
+using WorkflowHandlers.Requests;
 
 namespace OutOfProcessFunctionApp.Workflows;
 
@@ -21,9 +22,9 @@ public class BasicWorkflow : Workflow<BasicWorkflowRequest, Unit>
         // workflows support sequential requests
         var response = await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "1"));
 
-        //await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "1"));
-        //await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "2"));
-        //await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "3"));
+        await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "1"));
+        await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "2"));
+        await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "3"));
 
         //// workflows support parallel requests
         //await Task.WhenAll(Enumerable.Range('A', 26).Select(i =>

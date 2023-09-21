@@ -1,11 +1,11 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
-using OutOfProcessFunctionApp.Requests;
-using OutOfProcessFunctionApp.Responses;
+using WorkflowHandlers.Requests;
+using WorkflowHandlers.Responses;
 
-namespace OutOfProcessFunctionApp.RequestHandlers;
+namespace WorkflowHandlers.RequestHandlers;
 
-internal class SimpleRequestHandler : IRequestHandler<SimpleRequest, BasicResponse>
+public class SimpleRequestHandler : IRequestHandler<SimpleRequest, BasicResponse>
 {
     private readonly ILogger<SimpleRequestHandler> _logger;
 
