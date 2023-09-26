@@ -14,10 +14,11 @@ namespace DurableMediator.OutOfProcess;
  * - all the execution specials
  * - merge stuff into abstractions package
  * - make dependency collection extension
+ * - add tracing
+ * - remove generated extensions and refactor
  * - internalize everything that needs to be internal (also look at example projects)
  */
 
-[DurableTask(nameof(DurableMediator))]
 public class DurableMediator : TaskActivity<MediatorRequest, Unit>
 {
     private readonly IMediator _mediator;

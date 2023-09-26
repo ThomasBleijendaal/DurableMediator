@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace DurableMediator.OutOfProcess;
 
-public class MediatorRequestJsonConverter : JsonConverter<MediatorRequestWithResponse>
+public class MediatorRequestWithResponseJsonConverter : JsonConverter<MediatorRequestWithResponse>
 {
     public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(MediatorRequestWithResponse);
 
@@ -11,19 +11,9 @@ public class MediatorRequestJsonConverter : JsonConverter<MediatorRequestWithRes
     {
         var wrapper = JsonSerializer.Deserialize<MediatorRequestWithResponseJsonModel>(ref reader, options);
 
-        if (wrapper?.Type != null)
+        if (((JsonElement)wrapper?.Request).Deserialize(wrapper?.Type, options) is { } request)
         {
-            var type = Type.GetType(wrapper.Type);
-
-            if (type != null)
-            {
-                var request = ((JsonElement)wrapper.Request).Deserialize(type, options);
-
-                if (request != null)
-                {
-                    return new MediatorRequestWithResponse(request);
-                }
-            }
+            return new MediatorRequestWithResponse(request);
         }
 
         return null;

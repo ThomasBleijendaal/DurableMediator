@@ -7,14 +7,14 @@ using OutOfProcessFunctionApp.Workflows;
 
 namespace OutOfProcessFunctionApp;
 
-public static class BasicWorkflowTrigger
+public static class RecoveringWorkflowTrigger
 {
-    [Function(nameof(BasicWorkflowTrigger))]
+    [Function(nameof(RecoveringWorkflowTrigger))]
     public static async Task<HttpResponseData> TriggerOrchestratorAsync(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "basic")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "recovering")] HttpRequestData req,
         [DurableClient] DurableTaskClient client)
     {
-        var start = await client.ScheduleNewBasicWorkflowInstanceAsync(new BasicWorkflowRequest(Guid.NewGuid()));
+        var start = await client.ScheduleNewRecoveringWorkflowInstanceAsync(new RecoveringWorkflowRequest(Guid.NewGuid()));
 
         var response = req.CreateResponse(HttpStatusCode.Accepted);
 

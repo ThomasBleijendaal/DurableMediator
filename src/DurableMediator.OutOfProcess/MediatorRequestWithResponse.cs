@@ -2,5 +2,5 @@
 
 namespace DurableMediator.OutOfProcess;
 
-[JsonConverter(typeof(MediatorRequestJsonConverter))]
+[JsonConverter(typeof(MediatorRequestWithResponseJsonConverter))]
 public record MediatorRequestWithResponse(dynamic Request);

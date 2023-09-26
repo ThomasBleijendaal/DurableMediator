@@ -5,13 +5,13 @@ using Microsoft.Extensions.Logging;
 
 namespace DurableMediator.OutOfProcess;
 
-public class OrchestratorExecutor<TRequest, TResponse> : IWorkflowExecution<TRequest>
+public class OrchestratorExecutor<TWorkflowRequest, TWorkflowResponse> : IWorkflowExecution<TWorkflowRequest>
 {
     private readonly TaskOrchestrationContext _context;
-    private readonly TRequest _request;
+    private readonly TWorkflowRequest _request;
     private readonly ILogger _logger;
 
-    public OrchestratorExecutor(TaskOrchestrationContext context, TRequest request, ILogger logger)
+    public OrchestratorExecutor(TaskOrchestrationContext context, TWorkflowRequest request, ILogger logger)
     {
         _context = context;
         _request = request;
@@ -22,7 +22,7 @@ public class OrchestratorExecutor<TRequest, TResponse> : IWorkflowExecution<TReq
 
     public ILogger ReplaySafeLogger => _logger;
 
-    public TRequest Request => _request;
+    public TWorkflowRequest Request => _request;
 
     public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
     {
@@ -44,9 +44,33 @@ public class OrchestratorExecutor<TRequest, TResponse> : IWorkflowExecution<TReq
             ?? throw new InvalidOperationException("Cannot deserialize response");
     }
 
-    public Task<TWorkflowResponse?> CallSubWorkflowAsync<TWorkflowRequest, TWorkflowResponse>(TWorkflowRequest request)
-        where TWorkflowRequest : IWorkflowRequest<TWorkflowResponse>
+    public async Task<TResponse> SendWithCheckAsync<TResponse>(
+        IRequest<TResponse> request,
+        IRequest<TResponse?> checkIfRequestApplied,
+        CancellationToken token,
+        int maxAttempts = 3,
+        TimeSpan? delay = null)
     {
-        return _context.CallSubOrchestratorAsync<TWorkflowResponse?>(TWorkflowRequest.Workflow.Name, request, null);
+        var response = await _context.CallDurableMediatorWithCheckAndResponseAsync(
+            new MediatorRequestWithCheckAndResponse(request, checkIfRequestApplied),
+            new TaskOptions(
+                new TaskRetryOptions(
+                    new RetryPolicy(maxAttempts, DelayOrDefault(delay), backoffCoefficient: 2))));
+
+        if (response == null)
+        {
+            throw new InvalidOperationException("Received an empty response");
+        }
+
+        return ((JsonElement)response.Response).Deserialize<TResponse>()
+            ?? throw new InvalidOperationException("Cannot deserialize response");
     }
+
+    public Task<TSubWorkflowResponse?> CallSubWorkflowAsync<TSubWorkflowResponse>(IWorkflowRequest<TSubWorkflowResponse> request)
+    {
+        return _context.CallSubOrchestratorAsync<TSubWorkflowResponse?>(request.WorkflowName, request);
+    }
+
+    private static TimeSpan DelayOrDefault(TimeSpan? delay)
+        => delay ?? TimeSpan.FromMilliseconds(Random.Shared.Next(500, 800));
 }

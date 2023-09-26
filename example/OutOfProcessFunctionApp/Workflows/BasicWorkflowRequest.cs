@@ -5,7 +5,7 @@ namespace OutOfProcessFunctionApp.Workflows;
 
 public record BasicWorkflowRequest(Guid RequestId) : IWorkflowRequest<Unit>
 {
-    public static Type Workflow => typeof(BasicWorkflow);
+    public string WorkflowName => nameof(BasicWorkflow);
 
     public string InstanceId => $"basic-{RequestId}";
 }

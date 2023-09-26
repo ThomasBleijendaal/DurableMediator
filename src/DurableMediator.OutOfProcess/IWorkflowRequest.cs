@@ -1,6 +1,10 @@
 ﻿namespace DurableMediator.OutOfProcess;
 
-public interface IWorkflowRequest<TWorkflowResponse>
+public interface IWorkflowRequest<TWorkflowResponse> : IWorkflowRequest
 {
-    static abstract Type Workflow { get; }
+}
+
+public interface IWorkflowRequest
+{
+    string WorkflowName { get; }
 }

@@ -19,8 +19,6 @@ public class BasicWorkflow : Workflow<BasicWorkflowRequest, Unit>
         logger.LogInformation("Start with workflow");
 
         // workflows support sequential requests
-        var response = await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "1"));
-
         await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "1"));
         await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "2"));
         await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "3"));
@@ -52,9 +50,6 @@ public class BasicWorkflow : Workflow<BasicWorkflowRequest, Unit>
         var workflowResult = await execution.CallSubWorkflowAsync(new ReusableWorkflowRequest(Guid.NewGuid()));
 
         logger.LogInformation("Result from {subWorkflow}", workflowResult?.Description);
-
-        // workflows can also trigger other workflows and not wait their completion
-        //execution.StartWorkflow(new ReusableWorkflowRequest(Guid.NewGuid()));
 
         logger.LogInformation("Workflow done");
 

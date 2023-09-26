@@ -9,6 +9,7 @@ public static class GeneratedDurableTaskExtensions
 {
     public const string DurableMediatorName = "DurableMediator";
     public const string DurableMediatorWithResponseName = "DurableMediatorWithResponse";
+    public const string DurableMediatorWithCheckAndResponseName = "DurableMediatorWithCheckAndResponse";
 
     public static Task<Unit> CallDurableMediatorAsync(this TaskOrchestrationContext ctx, MediatorRequest input, TaskOptions? options = null)
     {
@@ -34,6 +35,20 @@ public static class GeneratedDurableTaskExtensions
     {
         ITaskActivity activity = ActivatorUtilities.CreateInstance<DurableMediatorWithResponse>(executionContext.InstanceServices);
         TaskActivityContext context = new GeneratedActivityContext(DurableMediatorWithResponseName, instanceId);
+        var result = await activity.RunAsync(context, input);
+        return (MediatorResponse)result!;
+    }
+
+    public static Task<MediatorResponse> CallDurableMediatorWithCheckAndResponseAsync(this TaskOrchestrationContext ctx, MediatorRequestWithCheckAndResponse input, TaskOptions? options = null)
+    {
+        return ctx.CallActivityAsync<MediatorResponse>(DurableMediatorWithCheckAndResponseName, input, options);
+    }
+
+    [Function(DurableMediatorWithCheckAndResponseName)]
+    public static async Task<MediatorResponse> DurableMediatorWithCheckAndResponseAsync([ActivityTrigger] MediatorRequestWithCheckAndResponse input, string instanceId, FunctionContext executionContext)
+    {
+        ITaskActivity activity = ActivatorUtilities.CreateInstance<DurableMediatorWithCheckAndResponse>(executionContext.InstanceServices);
+        TaskActivityContext context = new GeneratedActivityContext(DurableMediatorWithCheckAndResponseName, instanceId);
         var result = await activity.RunAsync(context, input);
         return (MediatorResponse)result!;
     }

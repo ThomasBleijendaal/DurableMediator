@@ -3,7 +3,6 @@ using Microsoft.DurableTask;
 
 namespace DurableMediator.OutOfProcess;
 
-[DurableTask(nameof(DurableMediatorWithResponse))]
 public class DurableMediatorWithResponse : TaskActivity<MediatorRequestWithResponse, MediatorResponse>
 {
     private readonly IMediator _mediator;
