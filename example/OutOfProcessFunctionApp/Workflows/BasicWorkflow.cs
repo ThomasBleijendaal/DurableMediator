@@ -18,6 +18,9 @@ public class BasicWorkflow : Workflow<BasicWorkflowRequest, Unit>
 
         logger.LogInformation("Start with workflow");
 
+        // workflows support requests without responses
+        await execution.SendAsync(new CommandRequest(execution.Request.RequestId, "command"));
+
         // workflows support sequential requests
         await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "1"));
         await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "2"));

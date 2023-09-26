@@ -1,3 +1,3 @@
 ﻿namespace DurableMediator.OutOfProcess;
 
-public record MediatorRequestWithResponseJsonModel(dynamic Request, string Type);
+internal record MediatorRequestWithResponseJsonModel(dynamic Request, string Type);

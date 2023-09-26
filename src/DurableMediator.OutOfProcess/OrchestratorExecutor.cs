@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DurableMediator.OutOfProcess;
 
-public class OrchestratorExecutor<TWorkflowRequest, TWorkflowResponse> : IWorkflowExecution<TWorkflowRequest>
+internal class OrchestratorExecutor<TWorkflowRequest, TWorkflowResponse> : IWorkflowExecution<TWorkflowRequest>
 {
     private readonly TaskOrchestrationContext _context;
     private readonly TWorkflowRequest _request;
@@ -24,24 +24,24 @@ public class OrchestratorExecutor<TWorkflowRequest, TWorkflowResponse> : IWorkfl
 
     public TWorkflowRequest Request => _request;
 
-    public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
+    public Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
+        => ExecuteRequestAsync(request, null);
+
+    public Task<TResponse> SendWithRetryAsync<TResponse>(
+        IRequest<TResponse> request,
+        CancellationToken token,
+        int maxAttempts = 3,
+        TimeSpan? delay = null)
+        => ExecuteRequestAsync(request, DefaultTaskOptions(maxAttempts, delay));
+
+    public async Task<TResponse> SendWithDelayAsync<TResponse>(
+        IRequest<TResponse> request,
+        CancellationToken token,
+        TimeSpan? delay = null)
     {
-        if (typeof(TResponse) == typeof(Unit))
-        {
-            await _context.CallDurableMediatorAsync(new MediatorRequest((IRequest<Unit>)request));
+        await _context.CreateTimer(OrchestrationContext.CurrentUtcDateTime.Add(delay ?? TimeSpan.FromSeconds(1)), token);
 
-            return default!;
-        }
-
-        var response = await _context.CallDurableMediatorWithResponseAsync(new MediatorRequestWithResponse(request));
-
-        if (response == null)
-        {
-            throw new InvalidOperationException("Received an empty response");
-        }
-
-        return ((JsonElement)response.Response).Deserialize<TResponse>()
-            ?? throw new InvalidOperationException("Cannot deserialize response");
+        return await ExecuteRequestAsync(request, null);
     }
 
     public async Task<TResponse> SendWithCheckAsync<TResponse>(
@@ -53,9 +53,7 @@ public class OrchestratorExecutor<TWorkflowRequest, TWorkflowResponse> : IWorkfl
     {
         var response = await _context.CallDurableMediatorWithCheckAndResponseAsync(
             new MediatorRequestWithCheckAndResponse(request, checkIfRequestApplied),
-            new TaskOptions(
-                new TaskRetryOptions(
-                    new RetryPolicy(maxAttempts, DelayOrDefault(delay), backoffCoefficient: 2))));
+            DefaultTaskOptions(maxAttempts, delay));
 
         if (response == null)
         {
@@ -70,6 +68,29 @@ public class OrchestratorExecutor<TWorkflowRequest, TWorkflowResponse> : IWorkfl
     {
         return _context.CallSubOrchestratorAsync<TSubWorkflowResponse?>(request.WorkflowName, request);
     }
+
+    private async Task<TResponse> ExecuteRequestAsync<TResponse>(IRequest<TResponse> request, TaskOptions? taskOptions)
+    {
+        if (typeof(TResponse) == typeof(Unit))
+        {
+            await _context.CallDurableMediatorAsync(new MediatorRequest((IRequest<Unit>)request), taskOptions);
+
+            return default!;
+        }
+
+        var response = await _context.CallDurableMediatorWithResponseAsync(new MediatorRequestWithResponse(request), taskOptions);
+
+        if (response == null)
+        {
+            throw new InvalidOperationException("Received an empty response");
+        }
+
+        return ((JsonElement)response.Response).Deserialize<TResponse>()
+            ?? throw new InvalidOperationException("Cannot deserialize response");
+    }
+
+    private static TaskOptions DefaultTaskOptions(int maxAttempts, TimeSpan? delay)
+        => new(new TaskRetryOptions(new RetryPolicy(maxAttempts, DelayOrDefault(delay), backoffCoefficient: 2)));
 
     private static TimeSpan DelayOrDefault(TimeSpan? delay)
         => delay ?? TimeSpan.FromMilliseconds(Random.Shared.Next(500, 800));

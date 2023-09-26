@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace DurableMediator.OutOfProcess;
 
-public class MediatorRequestWithCheckAndResponseJsonConverter : JsonConverter<MediatorRequestWithCheckAndResponse>
+internal class MediatorRequestWithCheckAndResponseJsonConverter : JsonConverter<MediatorRequestWithCheckAndResponse>
 {
     public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(MediatorRequestWithCheckAndResponse);
 

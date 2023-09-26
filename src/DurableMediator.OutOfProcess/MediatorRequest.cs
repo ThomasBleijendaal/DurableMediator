@@ -3,6 +3,5 @@ using MediatR;
 
 namespace DurableMediator.OutOfProcess;
 
-// TODO: is this one correct?
-[JsonConverter(typeof(MediatorRequestWithResponseJsonConverter))]
+[JsonConverter(typeof(MediatorRequestJsonConverter))]
 public record MediatorRequest(IRequest<Unit> Request);
