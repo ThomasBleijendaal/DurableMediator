@@ -14,10 +14,14 @@ jobs:
     - name: Get tag
       id: tag
       uses: dawidd6/action-get-tag@v1
-    - name: Setup .NET Core
+    - name: Setup .NET 6
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0.x'
+    - name: Setup .NET 7
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '7.0.x'
     - uses: nuget/setup-nuget@v1
       with:
         nuget-api-key: ${{ secrets.NUGET_APIKEY }}
@@ -26,10 +30,6 @@ jobs:
       run: dotnet build -p:PackageVersion=${{steps.tag.outputs.tag}} --configuration Release ./src/DurableMediator/DurableMediator.csproj
     - name: Publish Library
       run: dotnet nuget push .\src\DurableMediator\bin\Release\*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '7.0.x'
     - name: Build Library
       run: dotnet build -p:PackageVersion=${{steps.tag.outputs.tag}} --configuration Release ./src/DurableMediator.OutOfProcess/DurableMediator.OutOfProcess.csproj
     - name: Publish Library
