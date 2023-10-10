@@ -1,6 +1,6 @@
 # Durable Mediator
 
-[![#](https://img.shields.io/nuget/v/DurableMediator.OutOfProcess?style=flat-square)](https://www.nuget.org/packages/DurableMediator.OutOfProcess)
+[![#](https://img.shields.io/nuget/vpre/DurableMediator.OutOfProcess?style=flat-square)](https://www.nuget.org/packages/DurableMediator.OutOfProcess)
 
 Durable Mediator is an extension to the Durable Task library which allows for running MediatR Requests as activities in orchestrations without any complex ceremony.
 
