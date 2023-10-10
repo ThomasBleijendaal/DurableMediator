@@ -1,7 +1,7 @@
 ﻿using DurableMediator;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using WorkflowFunctionApp.Requests;
+using WorkflowHandlers.Requests;
 
 namespace WorkflowFunctionApp.Workflows;
 
@@ -22,7 +22,7 @@ internal record BasicWorkflow() : IWorkflow<BasicWorkflowRequest, Unit>
         await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "3"));
 
         // workflows support parallel requests
-        await Task.WhenAll(Enumerable.Range('A', 26).Select(i => 
+        await Task.WhenAll(Enumerable.Range('A', 26).Select(i =>
             execution.SendAsync(new SimpleRequest(execution.Request.RequestId, Convert.ToString((char)i)))));
 
         // workflows support doing parallel stuff while requests run
@@ -30,7 +30,7 @@ internal record BasicWorkflow() : IWorkflow<BasicWorkflowRequest, Unit>
 
         do
         {
-            await execution.OrchestrationContext.CreateTimer(execution.OrchestrationContext.CurrentUtcDateTime.AddSeconds(1), new { Message =  "Hi" }, CancellationToken.None);
+            await execution.OrchestrationContext.CreateTimer(execution.OrchestrationContext.CurrentUtcDateTime.AddSeconds(1), new { Message = "Hi" }, CancellationToken.None);
 
             if (slowTask.IsCompleted)
             {

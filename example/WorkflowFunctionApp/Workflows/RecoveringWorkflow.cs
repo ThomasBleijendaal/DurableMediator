@@ -1,7 +1,7 @@
 ﻿using DurableMediator;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using WorkflowFunctionApp.Requests;
+using WorkflowHandlers.Requests;
 
 namespace WorkflowFunctionApp.Workflows;
 

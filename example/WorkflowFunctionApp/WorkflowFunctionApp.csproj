@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
+    <ProjectUISubcaption>In-Process / .NET 6.0</ProjectUISubcaption>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MediatR" Version="10.0.1" />
@@ -17,6 +18,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\DurableMediator\DurableMediator.csproj" />
+    <ProjectReference Include="..\WorkflowHandlers\WorkflowHandlers.csproj" />
     <InternalsVisibleTo Include="WorkflowFunctionApp.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>

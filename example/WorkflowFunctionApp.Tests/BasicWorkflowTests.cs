@@ -1,12 +1,10 @@
 ﻿using DurableMediator;
-using DurableTask.Core;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using WorkflowFunctionApp.Requests;
-using WorkflowFunctionApp.Responses;
 using WorkflowFunctionApp.Workflows;
+using WorkflowHandlers.Requests;
+using WorkflowHandlers.Responses;
 
 namespace WorkflowFunctionApp.Tests;
 
@@ -14,7 +12,7 @@ public class BasicWorkflowTests
 {
     private BasicWorkflow _subject;
     private Mock<IWorkflowExecution<BasicWorkflowRequest>> _executionMock;
-    private Guid _requestId = Guid.NewGuid();
+    private readonly Guid _requestId = Guid.NewGuid();
 
     [SetUp]
     public void Setup()
