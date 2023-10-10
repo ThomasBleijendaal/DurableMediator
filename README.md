@@ -1,14 +1,6 @@
 # Durable Mediator
 
-## Azure Functions Out-Of-Process
-
-[![#](https://img.shields.io/nuget/vpre/DurableMediator.OutOfProcess?style=flat-square)](https://www.nuget.org/packages/DurableMediator.OutOfProcess)
-
-[Readme for Azure Functions Out-Of-Process (.NET 7 and higher)](README.oop.md).
-
-## Azure Functions In-Process
-
-[![#](https://img.shields.io/nuget/v/DurableMediator?style=flat-square)](https://www.nuget.org/packages/DurableMediator)
+[![#](https://img.shields.io/nuget/v/DurableMediator.OutOfProcess?style=flat-square)](https://www.nuget.org/packages/DurableMediator.OutOfProcess)
 
 Durable Mediator is an extension to the Durable Task library which allows for running MediatR Requests as activities in orchestrations without any complex ceremony.
 
@@ -55,13 +47,13 @@ public class MediatorRequestHandler : IRequestHandler<MediatorRequest>
         return Task.FromResult(Unit.Value);
     }
 }
-
 ```
 
 Create a workflow that handles the `WorkflowRequest`:
 
 ```c#
-public class ExampleWorkflow : IWorkflow<WorkflowRequest, Unit>
+[DurableTask(nameof(ExampleWorkflow))]
+public class ExampleWorkflow : Workflow<WorkflowRequest>
 {
     private readonly ILogger<ABCWorkflow> _logger;
 
@@ -70,17 +62,15 @@ public class ExampleWorkflow : IWorkflow<WorkflowRequest, Unit>
         _logger = logger;
     }
 
-    public async Task<Unit> OrchestrateAsync(IWorkflowExecution<WorkflowRequest> execution)
+    public override async Task OrchestrateAsync(IWorkflowExecution<WorkflowRequest> execution)
     {
         var logger = execution.OrchestrationContext.CreateReplaySafeLogger(_logger);
 
         logger.LogInformation("Start with workflow");
 
-        await execution.ExecuteAsync(new MediatorRequest(execution.Request.SomeId));
+        await execution.SendAsync(new MediatorRequest(execution.Request.SomeId));
 
         logger.LogInformation("Workflow done");
-
-        return Unit.Value;
     }
 }
 ```
@@ -90,45 +80,64 @@ Create a Azure Function that triggers this workflow:
 ```c#
 public static class WorkflowTrigger
 {
-    [FunctionName(nameof(WorkflowTrigger))]
+    [Function(nameof(WorkflowTrigger))]
     public static async Task<IActionResult> TriggerOrchestratorAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "workflow")] HttpRequestMessage req,
-        [Workflow] IWorkflowStarter starter)
+        [DurableClient] DurableTaskClient client)
     {
-        var startDetails = await starter.StartNewAsync(new WorkflowRequest(Guid.NewGuid()));
+        var startDetails = await client.ScheduleNewExampleWorkflowInstanceAsync(new WorkflowRequest(Guid.NewGuid()));
 
-        return new AcceptedResult("", startDetails);
+        var response = req.CreateResponse(HttpStatusCode.Accepted);
+
+        response.WriteString(startDetails);
+
+        return response;
     }
 }
 ```
 
-In your function app startup, add the required services by including `builder.AddDurableMediator(typeof(Startup));`.
+In your function app startup, add the required MediatR services by including `services.AddMediatR(typeof(MediatorRequest).Assembly);`.
 
 When running your function app you will see that next to the WorkflowTrigger Http Trigger function, an 
 Orchestration Trigger function called "WorkflowRequest" and a "DurableMediatorEntity" Entity Trigger 
 function are added. When http function triggers the start of the workflow, the orchestration function 
-will orchestrate the workflow and invoke `ExampleWorkflow`. Each call to the `execution.ExecuteAsync` 
-will trigger the DurableMediatorEntity to execute the MediatR Request in a separate activity after which 
+will orchestrate the workflow and invoke `ExampleWorkflow`. Each call to the `execution.SendAsync` 
+will trigger the durable mediator action to execute the MediatR Request in a separate activity after which 
 the orchestration resumes. No more calling `context.CallActivity` and guessing what parameters to pass in.
 
-The `execution` exposes the `IDurableOrchestrationContext` from the Durable Task library, giving full access 
+The `execution` exposes the `TaskOrchestrationContext` from the Durable Task library, giving full access 
 to creating timers for durable delays, locking entities for critical sections, or wait for external events. 
-The `execution` also exposes methods from `ISubWorkflowOrchestrator`, which allows workflows to initiate other workflows,
+The `execution` also exposes `CallSubWorkflowAsync`, which allows workflows to initiate other workflows,
 and even await their responses, making it easy to compose workflows. 
+
+## Unit testing
+
+See the OutOfProcessFunctionApp.Tests in the example folder for how to test workflows using scenarios. A scenario
+looks like this:
+
+```c#
+public class ExampleWorkflowScenario : Scenario
+{
+    private readonly Guid _requestId = Guid.NewGuid();
+
+    public override void Setup(IScenarioSetup scenarioSetup, Mock<TaskOrchestrationContext> taskOrchestrationContextMock)
+    {
+    }
+
+    public override IWorkflowRequest Request => new ExampleWorkflowRequest(_requestId);
+
+    public override IEnumerable<object> RunScenario(IScenarioRun scenarioRun)
+    {
+        yield return new MediatorRequest(_requestId);
+    }
+}
+```
+
+Based on what the Setup configures and simulates, the `RunScenario` should output what MediatR requests the workflow
+should emit. Next to MediatR requests, things like delays, exceptions, calls to other workflows and outputs can be
+completely unit tested.
+
 
 ## Examples
 
-See the WorkflowFunctionApp in the example folder for more examples.
-
-## Preview: Activity history and durable entities
-
-Use `builder.AddDurableMediator(useExperimentalEntityExecution: true, typeof(Startup));` to enable entity execution
-which allows for:
-
-- Enable capturing request and response data to and from durable mediator invocations. This allows 
-`IWorkflowManagement.GetWorkflowAsync` to output that data, making it possible to access the exact requests 
-and responses after the workflow has completed.
-
-The downside of this way feature is that every workflow will create a durable entity history record. This record
-will be stored in the orchestration history storage (under `@durablemediator@{instanceId}`) and needs to be cleared
-using `IDurableEntityClient.CleanEntityStorageAsync`.
+See the OutOfProcessFunctionApp in the example folder for more examples.
