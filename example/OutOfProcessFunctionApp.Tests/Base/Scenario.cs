@@ -20,6 +20,8 @@ public abstract class Scenario : IEnumerable
 
     public record CreateTimer(DateTime DateTime);
 
+    public record CreateDelay(TimeSpan Delay);
+
     public record CheckRequest(object Request, object Check, int MaxAttemps, TimeSpan? Delay);
 
     public record Throws(Type Exception);

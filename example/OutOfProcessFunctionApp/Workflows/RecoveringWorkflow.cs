@@ -1,4 +1,5 @@
 ﻿using DurableMediator.OutOfProcess;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
 using WorkflowHandlers.Requests;
@@ -8,10 +9,13 @@ namespace OutOfProcessFunctionApp.Workflows;
 /// <summary>
 /// The recovering workflow demonstrates how to handle requests that can 'successfully fail' and require a check if they actually succeeded before retrying.
 /// </summary>
-[DurableTask(nameof(RecoveringWorkflow))]
-public class RecoveringWorkflow : Workflow<RecoveringWorkflowRequest>
+public class RecoveringWorkflow : IWorkflow<RecoveringWorkflowRequest>
 {
-    public override async Task OrchestrateAsync(IWorkflowExecution<RecoveringWorkflowRequest> execution)
+    [Function(nameof(RecoveringWorkflow))]
+    public static Task RunAsync([OrchestrationTrigger] TaskOrchestrationContext context)
+        => Workflow.StartAsync<RecoveringWorkflow, RecoveringWorkflowRequest>(context);
+
+    public async Task OrchestrateAsync(IWorkflowExecution<RecoveringWorkflowRequest> execution)
     {
         var logger = execution.ReplaySafeLogger;
 

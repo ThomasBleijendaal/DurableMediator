@@ -1,13 +1,20 @@
 ﻿using MediatR;
 using Microsoft.DurableTask;
+using Microsoft.DurableTask.Entities;
 
 namespace DurableMediator.OutOfProcess;
 
 internal static class TaskOrchestrationContextExtensions
 {
-    public static Task<Unit> CallDurableMediatorAsync(this TaskOrchestrationContext ctx, MediatorRequest input, TaskOptions? options = null)
+    public static async Task<Unit> CallDurableMediatorAsync(this TaskOrchestrationContext ctx, MediatorRequest input, TaskOptions? options = null)
     {
-        return ctx.CallActivityAsync<Unit>(DurableMediatorFunction.DurableMediatorName, input, options);
+        var id = new EntityInstanceId(DurableMediatorEntity.DurableMediatorEntityName, "1");
+
+        await ctx.Entities.SignalEntityAsync(id, nameof(DurableMediatorEntity.DurableMediatorAsync), input);
+
+        return Unit.Value;
+
+        //return ctx.CallActivityAsync<Unit>(DurableMediatorFunction.DurableMediatorName, input, options);
     }
 
     public static Task<MediatorResponse> CallDurableMediatorWithResponseAsync(this TaskOrchestrationContext ctx, MediatorRequestWithResponse input, TaskOptions? options = null)

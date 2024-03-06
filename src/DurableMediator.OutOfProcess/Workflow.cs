@@ -13,7 +13,8 @@ public abstract class Workflow<TRequest, TResponse> : TaskOrchestrator<TRequest,
         logger.BeginScope(new Dictionary<string, object?> { { "instanceId", context.InstanceId } });
 
         var executor = new OrchestratorExecutor<TRequest>(context, input, logger);
-        return await OrchestrateAsync(executor);
+        var result = await OrchestrateAsync(executor);
+        return result;
     }
 
     public abstract Task<TResponse> OrchestrateAsync(IWorkflowExecution<TRequest> execution);
@@ -34,4 +35,52 @@ public abstract class Workflow<TRequest> : TaskOrchestrator<TRequest, Unit>
     }
 
     public abstract Task OrchestrateAsync(IWorkflowExecution<TRequest> execution);
+}
+
+public interface IWorkflow
+{
+
+}
+
+public interface IWorkflow<TRequest> : IWorkflow
+{
+    public abstract Task OrchestrateAsync(IWorkflowExecution<TRequest> execution);
+}
+
+public interface IWorkflow<TRequest, TResponse> : IWorkflow
+{
+    public abstract Task<TResponse> OrchestrateAsync(IWorkflowExecution<TRequest> execution);
+}
+
+public abstract class Workflow
+{
+    public static async Task StartAsync<TWorkflow, TRequest>(TaskOrchestrationContext context)
+        where TWorkflow : IWorkflow<TRequest>, new()
+    {
+        var workflow = new TWorkflow();
+
+        var logger = context.CreateReplaySafeLogger(typeof(TWorkflow));
+
+        logger.BeginScope(new Dictionary<string, object?> { { "instanceId", context.InstanceId } });
+
+        var input = context.GetInput<TRequest>() ?? throw new InvalidOperationException("Input invalid");
+
+        var executor = new OrchestratorExecutor<TRequest>(context, input, logger);
+        await workflow.OrchestrateAsync(executor);
+    }
+
+    public static async Task<TResponse> StartAsync<TWorkflow, TRequest, TResponse>(TaskOrchestrationContext context)
+        where TWorkflow : IWorkflow<TRequest, TResponse>, new()
+    {
+        var workflow = new TWorkflow();
+
+        var logger = context.CreateReplaySafeLogger(typeof(TWorkflow));
+
+        logger.BeginScope(new Dictionary<string, object?> { { "instanceId", context.InstanceId } });
+
+        var input = context.GetInput<TRequest>() ?? throw new InvalidOperationException("Input invalid");
+
+        var executor = new OrchestratorExecutor<TRequest>(context, input, logger);
+        return await workflow.OrchestrateAsync(executor);
+    }
 }

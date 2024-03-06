@@ -11,12 +11,12 @@ public abstract class ScenarioTestBase
     public abstract Task ScenarioAsync(Scenario scenario);
 
     public Task TestScenarioAsync<TWorkflow, TWorkflowRequest, TWorkflowResponse>(TWorkflow workflow, Scenario scenario)
-        where TWorkflow : Workflow<TWorkflowRequest, TWorkflowResponse>
+        where TWorkflow : IWorkflow<TWorkflowRequest, TWorkflowResponse>
         where TWorkflowRequest : IWorkflowRequest<TWorkflowResponse>
         => TestScenarioAsync<TWorkflowRequest, TWorkflowResponse>(workflow.OrchestrateAsync, scenario);
 
     public Task TestScenarioAsync<TWorkflow, TWorkflowRequest>(TWorkflow workflow, Scenario scenario)
-        where TWorkflow : Workflow<TWorkflowRequest>
+        where TWorkflow : IWorkflow<TWorkflowRequest>
         where TWorkflowRequest : IWorkflowRequest
         => TestScenarioAsync<TWorkflowRequest, Unit>(workflow.OrchestrateAsync, scenario);
 

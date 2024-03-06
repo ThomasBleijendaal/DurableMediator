@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.DurableTask.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace DurableMediator.OutOfProcess;
@@ -47,4 +48,30 @@ public class DurableMediatorFunction
 
         return new MediatorResponse(await _mediator.Send((object)input.Request).ConfigureAwait(false));
     }
+}
+
+public class DurableMediatorEntity : TaskEntity<int>
+{
+    public const string DurableMediatorEntityName = "DurableMediator";
+    private readonly IMediator _mediator;
+    private readonly ILogger<DurableMediatorFunction> _logger;
+
+    public DurableMediatorEntity(
+        IMediator mediator,
+        ILogger<DurableMediatorFunction> logger)
+    {
+        _mediator = mediator;
+        _logger = logger;
+    }
+
+    public async Task DurableMediatorAsync(MediatorRequest input)
+    {
+        //_logger.BeginScope(new Dictionary<string, object?> { { "instanceId", instanceId } });
+        await _mediator.Send(input.Request).ConfigureAwait(false);
+
+    }
+
+    [Function(DurableMediatorEntityName)]
+    public static Task DispatchAsync([EntityTrigger] TaskEntityDispatcher dispatcher)
+        => dispatcher.DispatchAsync<DurableMediatorEntity>();
 }

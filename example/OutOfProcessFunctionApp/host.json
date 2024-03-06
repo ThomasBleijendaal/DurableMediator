@@ -7,5 +7,10 @@
         "excludedTypes": "Request"
       }
     }
+  },
+  "extensions": {
+    "durableTask": {
+      "hubName": "OOPDM"
+    }
   }
 }

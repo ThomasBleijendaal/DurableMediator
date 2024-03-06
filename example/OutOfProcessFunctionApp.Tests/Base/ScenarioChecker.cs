@@ -44,6 +44,12 @@ internal class ScenarioChecker<TWorkflowRequest> : IWorkflowExecution<TWorkflowR
         return _execution.CallSubWorkflowAsync(request);
     }
 
+    public Task DelayAsync(TimeSpan delay, CancellationToken token)
+    {
+        CheckRequest(new Scenario.CreateDelay(delay));
+        return _execution.DelayAsync(delay, token);
+    }
+
     public Task SendAsync(IRequest request)
     {
         CheckRequest(request);
@@ -157,6 +163,12 @@ internal class ScenarioChecker<TWorkflowRequest> : IWorkflowExecution<TWorkflowR
         {
             _scenarioChecker.CheckRequest(new Scenario.CreateTimer(fireAt));
             return _context.CreateTimer(fireAt, cancellationToken);
+        }
+
+        public override Task CreateTimer(TimeSpan delay, CancellationToken cancellationToken)
+        {
+            _scenarioChecker.CheckRequest(new Scenario.CreateDelay(delay));
+            return _context.CreateTimer(delay, cancellationToken);
         }
 
         public override T GetInput<T>()
