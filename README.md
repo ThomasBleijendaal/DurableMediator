@@ -1,6 +1,6 @@
 # Durable Mediator
 
-[![#](https://img.shields.io/nuget/vpre/DurableMediator.OutOfProcess?style=flat-square)](https://www.nuget.org/packages/DurableMediator.OutOfProcess)
+[![#](https://img.shields.io/nuget/v/DurableMediator.OutOfProcess?style=flat-square)](https://www.nuget.org/packages/DurableMediator.OutOfProcess)
 
 Durable Mediator is an extension to the Durable Task library which allows for running MediatR Requests as activities in orchestrations without any complex ceremony.
 
@@ -112,7 +112,7 @@ and even await their responses, making it easy to compose workflows.
 
 ## Unit testing
 
-[![#](https://img.shields.io/nuget/vpre/DurableMediator.OutOfProcess.Testing?style=flat-square)](https://www.nuget.org/packages/DurableMediator.OutOfProcess.Testing)
+[![#](https://img.shields.io/nuget/v/DurableMediator.OutOfProcess.Testing?style=flat-square)](https://www.nuget.org/packages/DurableMediator.OutOfProcess.Testing)
 
 See the OutOfProcessFunctionApp.Tests in the example folder for how to test workflows using scenarios. A scenario
 looks like this:
