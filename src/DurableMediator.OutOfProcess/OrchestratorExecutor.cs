@@ -91,6 +91,11 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
         return _context.CallSubOrchestratorAsync<TSubWorkflowResponse?>(request.WorkflowName, request);
     }
 
+    public Task DelayAsync(TimeSpan delay, CancellationToken token)
+    {
+        return _context.CreateTimer(delay, token);
+    }
+
     private async Task ExecuteRequestAsync(IRequest request, TaskOptions? taskOptions)
     {
         await _context.CallDurableMediatorAsync(new MediatorRequest(request), taskOptions);
@@ -111,6 +116,10 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
         if (response.Response == null)
         {
             return default!;
+        }
+        else if (response.Response is TResponse typedResponse)
+        {
+            return typedResponse;
         }
 
         return ((JsonElement)response.Response).Deserialize<TResponse>()

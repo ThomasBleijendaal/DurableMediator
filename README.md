@@ -112,6 +112,8 @@ and even await their responses, making it easy to compose workflows.
 
 ## Unit testing
 
+[![#](https://img.shields.io/nuget/vpre/DurableMediator.OutOfProcess.Testing?style=flat-square)](https://www.nuget.org/packages/DurableMediator.OutOfProcess.Testing)
+
 See the OutOfProcessFunctionApp.Tests in the example folder for how to test workflows using scenarios. A scenario
 looks like this:
 

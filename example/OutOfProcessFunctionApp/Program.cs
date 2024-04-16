@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using DurableMediator.OutOfProcess;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OutOfProcessFunctionApp;
 using WorkflowHandlers.Requests;
 
 var host = new HostBuilder()
@@ -12,6 +14,13 @@ var host = new HostBuilder()
     .ConfigureServices(services =>
     {
         services.AddMediatR(config => config.RegisterServicesFromAssemblyContaining<SimpleRequest>());
+
+        services.AddDurableMediator();
+
+        services.AddWorkflowStarter();
+        services.AddSyncWorkflowClient();
+
+        services.AddTransient<IDurableMediatorMiddleware, LogAllRequestsMiddleware>();
     })
     .Build();
 

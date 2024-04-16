@@ -15,13 +15,15 @@ jobs:
       id: tag
       uses: dawidd6/action-get-tag@v1
     - name: Setup .NET 6
+      if: ${{ startsWith(steps.tag.outputs.tag, '2.')  }}
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0.x'
-    - name: Setup .NET 7
+    - name: Setup .NET 8
+      if: ${{ startsWith(steps.tag.outputs.tag, '3.')  }}
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '7.0.x'
+        dotnet-version: '8.0.x'
     - uses: nuget/setup-nuget@v1
       with:
         nuget-api-key: ${{ secrets.NUGET_APIKEY }}
@@ -37,4 +39,10 @@ jobs:
       if: ${{ startsWith(steps.tag.outputs.tag, '3.')  }}
     - name: Publish Library
       run: dotnet nuget push .\src\DurableMediator.OutOfProcess\bin\Release\*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
+      if: ${{ startsWith(steps.tag.outputs.tag, '3.')  }}
+    - name: Build Testing Library
+      run: dotnet build -p:PackageVersion=${{steps.tag.outputs.tag}} --configuration Release ./src/DurableMediator.OutOfProcess.Testing/DurableMediator.OutOfProcess.Testing.csproj
+      if: ${{ startsWith(steps.tag.outputs.tag, '3.')  }}
+    - name: Publish Testing Library
+      run: dotnet nuget push .\src\DurableMediator.OutOfProcess.Testing\bin\Release\*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
       if: ${{ startsWith(steps.tag.outputs.tag, '3.')  }}

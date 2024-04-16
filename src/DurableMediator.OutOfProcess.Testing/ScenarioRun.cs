@@ -1,4 +1,4 @@
-﻿namespace OutOfProcessFunctionApp.Tests.Base;
+﻿namespace DurableMediator.OutOfProcess.Testing;
 
 internal class ScenarioRun : IScenarioRun
 {

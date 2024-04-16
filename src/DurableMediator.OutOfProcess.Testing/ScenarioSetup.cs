@@ -2,7 +2,7 @@
 using MediatR;
 using Moq;
 
-namespace OutOfProcessFunctionApp.Tests.Base;
+namespace DurableMediator.OutOfProcess.Testing;
 
 internal class ScenarioSetup<TWorkflowRequest> : IScenarioSetup
 {

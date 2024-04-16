@@ -1,10 +1,10 @@
-﻿using DurableMediator.OutOfProcess;
-using MediatR;
+﻿using MediatR;
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NUnit.Framework;
 
-namespace OutOfProcessFunctionApp.Tests.Base;
+namespace DurableMediator.OutOfProcess.Testing;
 
 internal class ScenarioChecker<TWorkflowRequest> : IWorkflowExecution<TWorkflowRequest>
 {
@@ -42,6 +42,12 @@ internal class ScenarioChecker<TWorkflowRequest> : IWorkflowExecution<TWorkflowR
     {
         CheckRequest(request);
         return _execution.CallSubWorkflowAsync(request);
+    }
+
+    public Task DelayAsync(TimeSpan delay, CancellationToken token)
+    {
+        CheckRequest(new Scenario.CreateDelay(delay));
+        return _execution.DelayAsync(delay, token);
     }
 
     public Task SendAsync(IRequest request)
@@ -157,6 +163,12 @@ internal class ScenarioChecker<TWorkflowRequest> : IWorkflowExecution<TWorkflowR
         {
             _scenarioChecker.CheckRequest(new Scenario.CreateTimer(fireAt));
             return _context.CreateTimer(fireAt, cancellationToken);
+        }
+
+        public override Task CreateTimer(TimeSpan delay, CancellationToken cancellationToken)
+        {
+            _scenarioChecker.CheckRequest(new Scenario.CreateDelay(delay));
+            return _context.CreateTimer(delay, cancellationToken);
         }
 
         public override T GetInput<T>()

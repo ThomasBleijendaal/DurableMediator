@@ -1,9 +1,9 @@
 ﻿using System.Collections;
-using DurableMediator.OutOfProcess;
 using Microsoft.DurableTask;
 using Moq;
+using NUnit.Framework;
 
-namespace OutOfProcessFunctionApp.Tests.Base;
+namespace DurableMediator.OutOfProcess.Testing;
 
 public abstract class Scenario : IEnumerable
 {
@@ -19,6 +19,8 @@ public abstract class Scenario : IEnumerable
     public abstract IEnumerable<object> RunScenario(IScenarioRun scenarioRun);
 
     public record CreateTimer(DateTime DateTime);
+
+    public record CreateDelay(TimeSpan Delay);
 
     public record CheckRequest(object Request, object Check, int MaxAttemps, TimeSpan? Delay);
 

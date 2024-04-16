@@ -1,4 +1,5 @@
 ﻿using DurableMediator.OutOfProcess;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
 using WorkflowHandlers.Requests;
@@ -8,10 +9,13 @@ namespace OutOfProcessFunctionApp.Workflows;
 /// <summary>
 /// The basic workflow demonstrates how to perform multiple requests in a single workflow. 
 /// </summary>
-[DurableTask(nameof(BasicWorkflow))]
-public class BasicWorkflow : Workflow<BasicWorkflowRequest>
+public class BasicWorkflow : IWorkflow<BasicWorkflowRequest>
 {
-    public override async Task OrchestrateAsync(IWorkflowExecution<BasicWorkflowRequest> execution)
+    [Function(nameof(BasicWorkflow))]
+    public static Task RunAsync([OrchestrationTrigger] TaskOrchestrationContext context)
+        => Workflow.StartAsync<BasicWorkflow, BasicWorkflowRequest>(context);
+
+    public async Task OrchestrateAsync(IWorkflowExecution<BasicWorkflowRequest> execution)
     {
         var logger = execution.ReplaySafeLogger;
 
@@ -34,7 +38,7 @@ public class BasicWorkflow : Workflow<BasicWorkflowRequest>
 
         do
         {
-            await execution.OrchestrationContext.CreateTimer(execution.OrchestrationContext.CurrentUtcDateTime.AddSeconds(1), CancellationToken.None);
+            await execution.DelayAsync(TimeSpan.FromSeconds(1), CancellationToken.None);
             if (slowTask.IsCompleted)
             {
                 logger.LogInformation("Slow task done");

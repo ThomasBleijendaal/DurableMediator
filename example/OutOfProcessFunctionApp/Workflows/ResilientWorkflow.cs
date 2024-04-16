@@ -1,4 +1,5 @@
 ﻿using DurableMediator.OutOfProcess;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
 using WorkflowHandlers.Requests;
@@ -8,10 +9,13 @@ namespace OutOfProcessFunctionApp.Workflows;
 /// <summary>
 /// The resilient workflow demonstrates how to handle requests that are prone to fail.
 /// </summary>
-[DurableTask(nameof(ResilientWorkflow))]
-public class ResilientWorkflow : Workflow<ResilientWorkflowRequest>
+public class ResilientWorkflow : IWorkflow<ResilientWorkflowRequest>
 {
-    public override async Task OrchestrateAsync(IWorkflowExecution<ResilientWorkflowRequest> execution)
+    [Function(nameof(ResilientWorkflow))]
+    public static Task RunAsync([OrchestrationTrigger] TaskOrchestrationContext context)
+        => Workflow.StartAsync<ResilientWorkflow, ResilientWorkflowRequest>(context);
+
+    public async Task OrchestrateAsync(IWorkflowExecution<ResilientWorkflowRequest> execution)
     {
         var logger = execution.ReplaySafeLogger;
 

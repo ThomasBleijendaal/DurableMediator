@@ -1,7 +1,7 @@
 ﻿using System.Net;
+using DurableMediator.OutOfProcess;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using OutOfProcessFunctionApp.Workflows;
 
@@ -14,7 +14,7 @@ public static class BasicWorkflowTrigger
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "basic")] HttpRequestData req,
         [DurableClient] DurableTaskClient client)
     {
-        var start = await client.ScheduleNewBasicWorkflowInstanceAsync(new BasicWorkflowRequest(Guid.NewGuid()));
+        var start = await client.StartWorkflowAsync(new BasicWorkflowRequest(Guid.NewGuid()));
 
         var response = req.CreateResponse(HttpStatusCode.Accepted);
 

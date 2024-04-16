@@ -1,7 +1,7 @@
 ﻿using DurableMediator.OutOfProcess;
+using DurableMediator.OutOfProcess.Testing;
 using Microsoft.DurableTask;
 using Moq;
-using OutOfProcessFunctionApp.Tests.Base;
 using OutOfProcessFunctionApp.Workflows;
 using WorkflowHandlers.Requests;
 using WorkflowHandlers.Responses;
@@ -53,7 +53,7 @@ public class BasicWorkflowScenario : Scenario
         yield return new SimpleRequest(_requestId, "Y");
         yield return new SimpleRequest(_requestId, "Z");
         yield return new SlowRequest(_requestId);
-        yield return new CreateTimer(scenarioRun.CurrentUtcDateTime.AddSeconds(1));
+        yield return new CreateDelay(TimeSpan.FromSeconds(1));
         yield return new ReusableWorkflowRequest(scenarioRun.NewGuid());
     }
 }

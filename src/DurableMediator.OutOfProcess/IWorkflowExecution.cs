@@ -122,4 +122,12 @@ public interface IWorkflowExecution<TRequest>
     /// <returns></returns>
     /// <exception cref="TaskFailedException" />
     Task<TWorkflowResponse?> CallSubWorkflowAsync<TWorkflowResponse>(IWorkflowRequest<TWorkflowResponse> request);
+
+    /// <summary>
+    /// Pauses the orchestration with the given delay.
+    /// </summary>
+    /// <param name="delay"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    Task DelayAsync(TimeSpan delay, CancellationToken token);
 }

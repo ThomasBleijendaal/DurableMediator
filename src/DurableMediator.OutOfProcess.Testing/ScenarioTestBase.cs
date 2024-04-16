@@ -1,22 +1,22 @@
-﻿using DurableMediator.OutOfProcess;
-using MediatR;
+﻿using MediatR;
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NUnit.Framework;
 
-namespace OutOfProcessFunctionApp.Tests.Base;
+namespace DurableMediator.OutOfProcess.Testing;
 
 public abstract class ScenarioTestBase
 {
     public abstract Task ScenarioAsync(Scenario scenario);
 
     public Task TestScenarioAsync<TWorkflow, TWorkflowRequest, TWorkflowResponse>(TWorkflow workflow, Scenario scenario)
-        where TWorkflow : Workflow<TWorkflowRequest, TWorkflowResponse>
+        where TWorkflow : IWorkflow<TWorkflowRequest, TWorkflowResponse>
         where TWorkflowRequest : IWorkflowRequest<TWorkflowResponse>
         => TestScenarioAsync<TWorkflowRequest, TWorkflowResponse>(workflow.OrchestrateAsync, scenario);
 
     public Task TestScenarioAsync<TWorkflow, TWorkflowRequest>(TWorkflow workflow, Scenario scenario)
-        where TWorkflow : Workflow<TWorkflowRequest>
+        where TWorkflow : IWorkflow<TWorkflowRequest>
         where TWorkflowRequest : IWorkflowRequest
         => TestScenarioAsync<TWorkflowRequest, Unit>(workflow.OrchestrateAsync, scenario);
 
