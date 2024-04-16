@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\DurableMediator.OutOfProcess.Testing\DurableMediator.OutOfProcess.Testing.csproj" />
     <ProjectReference Include="..\OutOfProcessFunctionApp\OutOfProcessFunctionApp.csproj" />
   </ItemGroup>
 

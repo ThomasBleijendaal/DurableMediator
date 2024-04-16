@@ -117,6 +117,10 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
         {
             return default!;
         }
+        else if (response.Response is TResponse typedResponse)
+        {
+            return typedResponse;
+        }
 
         return ((JsonElement)response.Response).Deserialize<TResponse>()
             ?? throw new InvalidOperationException("Cannot deserialize response");

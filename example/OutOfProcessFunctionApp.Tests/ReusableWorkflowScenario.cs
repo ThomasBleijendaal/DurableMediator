@@ -1,7 +1,7 @@
 ﻿using DurableMediator.OutOfProcess;
+using DurableMediator.OutOfProcess.Testing;
 using Microsoft.DurableTask;
 using Moq;
-using OutOfProcessFunctionApp.Tests.Base;
 using OutOfProcessFunctionApp.Workflows;
 using WorkflowHandlers.Responses;
 

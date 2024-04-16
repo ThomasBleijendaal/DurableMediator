@@ -1,10 +1,10 @@
-﻿using DurableMediator.OutOfProcess;
-using MediatR;
+﻿using MediatR;
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NUnit.Framework;
 
-namespace OutOfProcessFunctionApp.Tests.Base;
+namespace DurableMediator.OutOfProcess.Testing;
 
 public abstract class ScenarioTestBase
 {

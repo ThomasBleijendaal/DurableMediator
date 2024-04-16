@@ -11,7 +11,6 @@ namespace OutOfProcessFunctionApp.Workflows;
 /// </summary>
 public class BasicWorkflow : IWorkflow<BasicWorkflowRequest>
 {
-
     [Function(nameof(BasicWorkflow))]
     public static Task RunAsync([OrchestrationTrigger] TaskOrchestrationContext context)
         => Workflow.StartAsync<BasicWorkflow, BasicWorkflowRequest>(context);
@@ -25,38 +24,38 @@ public class BasicWorkflow : IWorkflow<BasicWorkflowRequest>
         // workflows support requests without responses
         await execution.SendAsync(new CommandRequest(execution.Request.RequestId, "command"));
 
-        //// workflows support sequential requests
-        //await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "1"));
-        //await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "2"));
-        //await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "3"));
+        // workflows support sequential requests
+        await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "1"));
+        await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "2"));
+        await execution.SendAsync(new SimpleRequest(execution.Request.RequestId, "3"));
 
-        //// workflows support parallel requests
-        //await Task.WhenAll(Enumerable.Range('A', 26).Select(i =>
-        //    execution.SendAsync(new SimpleRequest(execution.Request.RequestId, Convert.ToString((char)i)))));
+        // workflows support parallel requests
+        await Task.WhenAll(Enumerable.Range('A', 26).Select(i =>
+            execution.SendAsync(new SimpleRequest(execution.Request.RequestId, Convert.ToString((char)i)))));
 
-        //// workflows support doing parallel stuff while requests run
-        //var slowTask = execution.SendAsync(new SlowRequest(execution.Request.RequestId));
+        // workflows support doing parallel stuff while requests run
+        var slowTask = execution.SendAsync(new SlowRequest(execution.Request.RequestId));
 
-        //do
-        //{
-        //    await execution.DelayAsync(TimeSpan.FromSeconds(1), CancellationToken.None);
-        //    if (slowTask.IsCompleted)
-        //    {
-        //        logger.LogInformation("Slow task done");
+        do
+        {
+            await execution.DelayAsync(TimeSpan.FromSeconds(1), CancellationToken.None);
+            if (slowTask.IsCompleted)
+            {
+                logger.LogInformation("Slow task done");
 
-        //        break;
-        //    }
-        //    else
-        //    {
-        //        logger.LogInformation("Slow task still pending");
-        //    }
-        //}
-        //while (true);
+                break;
+            }
+            else
+            {
+                logger.LogInformation("Slow task still pending");
+            }
+        }
+        while (true);
 
-        //// workflows can trigger other workflows and wait for their completion
-        //var workflowResult = await execution.CallSubWorkflowAsync(new ReusableWorkflowRequest(execution.OrchestrationContext.NewGuid()));
+        // workflows can trigger other workflows and wait for their completion
+        var workflowResult = await execution.CallSubWorkflowAsync(new ReusableWorkflowRequest(execution.OrchestrationContext.NewGuid()));
 
-        //logger.LogInformation("Result from {subWorkflow}", workflowResult?.Description);
+        logger.LogInformation("Result from {subWorkflow}", workflowResult?.Description);
 
         logger.LogInformation("Workflow done");
     }

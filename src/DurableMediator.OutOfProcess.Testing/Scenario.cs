@@ -1,9 +1,9 @@
 ﻿using System.Collections;
-using DurableMediator.OutOfProcess;
 using Microsoft.DurableTask;
 using Moq;
+using NUnit.Framework;
 
-namespace OutOfProcessFunctionApp.Tests.Base;
+namespace DurableMediator.OutOfProcess.Testing;
 
 public abstract class Scenario : IEnumerable
 {

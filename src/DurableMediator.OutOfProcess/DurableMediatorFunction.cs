@@ -1,7 +1,6 @@
-﻿using MediatR;
+﻿using System.Runtime.ExceptionServices;
+using MediatR;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.DurableTask.Entities;
-using Microsoft.Extensions.Logging;
 
 namespace DurableMediator.OutOfProcess;
 
@@ -12,66 +11,139 @@ public class DurableMediatorFunction
     public const string DurableMediatorWithCheckAndResponseName = "RequestWithResponseCheck";
 
     private readonly IMediator _mediator;
-    private readonly ILogger<DurableMediatorFunction> _logger;
+    private readonly IReadOnlyList<IDurableMediatorMiddleware> _middlewares;
 
     public DurableMediatorFunction(
         IMediator mediator,
-        ILogger<DurableMediatorFunction> logger)
+        IEnumerable<IDurableMediatorMiddleware> middlewares)
     {
         _mediator = mediator;
-        _logger = logger;
+        _middlewares = middlewares.ToList();
     }
 
     [Function(DurableMediatorName)]
     public async Task<Unit> DurableMediatorAsync([ActivityTrigger] MediatorRequest input, string instanceId)
     {
-        _logger.BeginScope(new Dictionary<string, object?> { { "instanceId", instanceId } });
-        await _mediator.Send(input.Request).ConfigureAwait(false);
+        for (var i = 0; i < _middlewares.Count; i++)
+        {
+            await _middlewares[i].PreProcessAsync(input.Request, instanceId);
+        }
+
+        Exception? exception = null;
+        try
+        {
+            await _mediator.Send(input.Request).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        for (var i = _middlewares.Count - 1; i >= 0; i--)
+        {
+            await _middlewares[i].PostProcessAsync(input.Request, Unit.Value, instanceId);
+        }
+
+        if (exception != null)
+        {
+            ExceptionDispatchInfo.Throw(exception);
+        }
+
         return Unit.Value;
     }
 
     [Function(DurableMediatorWithResponseName)]
     public async Task<MediatorResponse> DurableMediatorWithResponseAsync([ActivityTrigger] MediatorRequestWithResponse input, string instanceId)
     {
-        _logger.BeginScope(new Dictionary<string, object?> { { "instanceId", instanceId } });
-        return new MediatorResponse(await _mediator.Send((object)input.Request).ConfigureAwait(false));
+        for (var i = 0; i < _middlewares.Count; i++)
+        {
+            await _middlewares[i].PreProcessAsync(input.Request, instanceId);
+        }
+
+        Exception? exception = null;
+        object? result = null;
+        try
+        {
+            result = await _mediator.Send((object)input.Request).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        for (var i = _middlewares.Count - 1; i >= 0; i--)
+        {
+            await _middlewares[i].PostProcessAsync(input.Request, result, instanceId);
+        }
+
+        if (exception != null)
+        {
+            ExceptionDispatchInfo.Throw(exception);
+        }
+
+        return new MediatorResponse(result);
     }
 
     [Function(DurableMediatorWithCheckAndResponseName)]
     public async Task<MediatorResponse> DurableMediatorWithCheckAndResponseAsync([ActivityTrigger] MediatorRequestWithCheckAndResponse input, string instanceId)
     {
-        _logger.BeginScope(new Dictionary<string, object?> { { "instanceId", instanceId } });
-        if (await _mediator.Send(input.CheckIfRequestApplied).ConfigureAwait(false) is { } result)
+        for (var i = 0; i < _middlewares.Count; i++)
         {
-            return new MediatorResponse(result);
+            await _middlewares[i].PreProcessAsync(input.Request, instanceId);
         }
 
-        return new MediatorResponse(await _mediator.Send((object)input.Request).ConfigureAwait(false));
+        Exception? exception = null;
+        object? result = null;
+
+        try
+        {
+            result = await _mediator.Send(input.CheckIfRequestApplied).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        for (var i = _middlewares.Count - 1; i >= 0; i--)
+        {
+            await _middlewares[i].PostProcessAsync(input.Request, result, instanceId);
+        }
+
+        if (exception != null)
+        {
+            ExceptionDispatchInfo.Throw(exception);
+        }
+
+        if (result is { } checkResult)
+        {
+            return new MediatorResponse(checkResult);
+        }
+
+        for (var i = 0; i < _middlewares.Count; i++)
+        {
+            await _middlewares[i].PreProcessAsync(input.Request, instanceId);
+        }
+
+        result = null;
+        try
+        {
+            result = await _mediator.Send((object)input.Request).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        for (var i = _middlewares.Count - 1; i >= 0; i--)
+        {
+            await _middlewares[i].PostProcessAsync(input.Request, result, instanceId);
+        }
+
+        if (exception != null)
+        {
+            ExceptionDispatchInfo.Throw(exception);
+        }
+
+        return new MediatorResponse(result);
     }
-}
-
-public class DurableMediatorEntity : TaskEntity<int>
-{
-    public const string DurableMediatorEntityName = "DurableMediator";
-    private readonly IMediator _mediator;
-    private readonly ILogger<DurableMediatorFunction> _logger;
-
-    public DurableMediatorEntity(
-        IMediator mediator,
-        ILogger<DurableMediatorFunction> logger)
-    {
-        _mediator = mediator;
-        _logger = logger;
-    }
-
-    public async Task DurableMediatorAsync(MediatorRequest input)
-    {
-        //_logger.BeginScope(new Dictionary<string, object?> { { "instanceId", instanceId } });
-        await _mediator.Send(input.Request).ConfigureAwait(false);
-
-    }
-
-    [Function(DurableMediatorEntityName)]
-    public static Task DispatchAsync([EntityTrigger] TaskEntityDispatcher dispatcher)
-        => dispatcher.DispatchAsync<DurableMediatorEntity>();
 }

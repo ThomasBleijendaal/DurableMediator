@@ -1,4 +1,4 @@
-﻿using OutOfProcessFunctionApp.Tests.Base;
+﻿using DurableMediator.OutOfProcess.Testing;
 using OutOfProcessFunctionApp.Workflows;
 
 namespace OutOfProcessFunctionApp.Tests;
