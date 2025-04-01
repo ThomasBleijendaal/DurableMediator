@@ -15,8 +15,6 @@ public static class ServiceCollectionExtensions
     {
         AddTaskHubClient(services);
 
-        services.AddTransient<IDurableMediatorMiddleware, DurableMediatorLoggingMiddleware>();
-
         services.AddTransient<MediatorRequestActivity>();
         services.AddTransient<MediatorRequestWithResponseActivity>();
         services.AddTransient<MediatorRequestWithCheckAndResponseActivity>();

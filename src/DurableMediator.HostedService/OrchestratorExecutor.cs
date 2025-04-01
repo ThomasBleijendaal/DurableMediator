@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using DurableMediator.HostedService.Constants;
 using DurableMediator.HostedService.Extensions;
+using DurableMediator.HostedService.Managers;
 using DurableMediator.HostedService.Models;
 using DurableTask.Core;
 using MediatR;
@@ -14,6 +15,8 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
     private readonly TWorkflowRequest _request;
     private readonly ILogger _logger;
 
+    private int _newGuidCounter;
+
     public OrchestratorExecutor(OrchestrationContext context, TWorkflowRequest request, ILogger logger)
     {
         _context = context;
@@ -24,6 +27,15 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
     public OrchestrationContext OrchestrationContext => _context;
 
     public ILogger ReplaySafeLogger => _logger;
+
+    public Guid NewGuid()
+    {
+        var guidNameValue = $"{_context.OrchestrationInstance.InstanceId}_{_context.CurrentUtcDateTime:o}_{_newGuidCounter}";
+
+        _newGuidCounter++;
+
+        return GuidManager.CreateDeterministicGuid(GuidManager.DefaultNamespace, guidNameValue);
+    }
 
     public TWorkflowRequest Request => _request;
 

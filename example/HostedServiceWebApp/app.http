@@ -1,0 +1,15 @@
+@HostedServiceWebApp_HostAddress = http://localhost:5238
+
+POST {{HostedServiceWebApp_HostAddress}}/basic
+
+###
+
+POST {{HostedServiceWebApp_HostAddress}}/recovering
+
+###
+
+POST {{HostedServiceWebApp_HostAddress}}/resilient
+
+###
+
+

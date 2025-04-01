@@ -14,6 +14,12 @@ public interface IWorkflowExecution<TRequest>
     ILogger ReplaySafeLogger { get; }
 
     /// <summary>
+    /// A replay safe Guid for use during the execution of the workflow.
+    /// </summary>
+    /// <returns></returns>
+    Guid NewGuid();
+
+    /// <summary>
     /// The original request that started the workflow.
     /// </summary>
     TRequest Request { get; }
