@@ -12,7 +12,6 @@ public static class ServiceCollectionExtensions
         services.AddTransient(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
-            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
             var storageConnectionString = config.GetValue<string>("AzureStorageConnectionString")
                ?? throw new InvalidOperationException();
@@ -22,7 +21,6 @@ public static class ServiceCollectionExtensions
 
             var azureStorageSettings = new AzureStorageOrchestrationServiceSettings
             {
-                LoggerFactory = loggerFactory,
                 StorageAccountClientProvider = new StorageAccountClientProvider(storageConnectionString),
                 TaskHubName = taskHubName,
                 UseAppLease = useAppLease
