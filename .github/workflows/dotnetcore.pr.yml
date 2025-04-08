@@ -25,3 +25,5 @@ jobs:
       run: dotnet build --configuration Release ./src/DurableMediator.OutOfProcess/DurableMediator.OutOfProcess.csproj
     - name: Build Testing Library
       run: dotnet build --configuration Release ./src/DurableMediator.OutOfProcess.Testing/DurableMediator.OutOfProcess.Testing.csproj
+    - name: Build Library
+      run: dotnet build --configuration Release ./src/DurableMediator.HostedService/DurableMediator.HostedService.csproj

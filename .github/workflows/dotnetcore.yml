@@ -46,3 +46,9 @@ jobs:
     - name: Publish Testing Library
       run: dotnet nuget push .\src\DurableMediator.OutOfProcess.Testing\bin\Release\*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
       if: ${{ startsWith(steps.tag.outputs.tag, '3.')  }}
+    - name: Build Library
+      run: dotnet build -p:PackageVersion=${{steps.tag.outputs.tag}} --configuration Release ./src/DurableMediator.HostedService/DurableMediator.HostedService.csproj
+      if: ${{ startsWith(steps.tag.outputs.tag, '3.')  }}
+    - name: Publish Library
+      run: dotnet nuget push .\src\DurableMediator.HostedService\bin\Release\*.nupkg -k ${{ secrets.NUGET_APIKEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
+      if: ${{ startsWith(steps.tag.outputs.tag, '3.')  }}
