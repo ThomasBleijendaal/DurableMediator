@@ -22,7 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ObjectCreator<TaskActivity>, ActivityCreator<MediatorRequestWithResponseActivity>>();
         services.AddTransient<ObjectCreator<TaskActivity>, ActivityCreator<MediatorRequestWithCheckAndResponseActivity>>();
 
-        services.AddTransient(serviceResolver);
+        services.AddSingleton(serviceResolver);
         services.AddHostedService<DurableBackgroundService>();
 
         return services;
@@ -78,7 +78,7 @@ public static class ServiceCollectionExtensions
     {
         if (!services.Any(x => x.ServiceType == typeof(TaskHubClient)))
         {
-            services.AddTransient(sp =>
+            services.AddSingleton(sp =>
             {
                 var service = sp.GetRequiredService<IOrchestrationServiceClient>();
                 return new TaskHubClient(service);

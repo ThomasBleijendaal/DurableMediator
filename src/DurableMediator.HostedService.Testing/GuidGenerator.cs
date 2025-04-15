@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace DurableMediator.OutOfProcess.Testing;
+namespace DurableMediator.HostedService.Testing;
 
 internal class GuidGenerator
 {
