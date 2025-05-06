@@ -24,7 +24,7 @@ internal class WorkflowService : IWorkflowService
     {
         var state = await _taskHubClient.GetOrchestrationStateAsync(new OrchestrationInstance { InstanceId = instanceId });
 
-        if (state.Output == null)
+        if (state?.Output == null)
         {
             return default;
         }
