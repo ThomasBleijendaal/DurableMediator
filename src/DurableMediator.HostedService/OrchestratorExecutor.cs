@@ -103,9 +103,9 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
 
     public async Task<TSubWorkflowResponse?> CallSubWorkflowAsync<TSubWorkflowResponse>(IWorkflowRequest<TSubWorkflowResponse> request)
     {
-        var result = await _context.CreateSubOrchestrationInstance<WorkflowOutput?>(request.WorkflowName, Versions.Default, request.InstanceId, request);
+        var result = await _context.CreateSubOrchestrationInstance<string?>(request.WorkflowName, Versions.Default, request.InstanceId, request);
 
-        return (TSubWorkflowResponse?)result?.Output;
+        return result == null ? default : (TSubWorkflowResponse?)JsonSerializer.Deserialize<WorkflowOutput>(result)?.Output;
     }
 
     public Task DelayAsync(TimeSpan delay, CancellationToken token)
