@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
-using DurableMediator.HostedService.Extensions;
+﻿using DurableMediator.HostedService.Extensions;
 using DurableMediator.HostedService.Models;
 using DurableTask.Core;
+using DurableTask.Core.Serializing;
 
 namespace DurableMediator.HostedService;
 
@@ -43,8 +43,9 @@ internal class WorkflowService : IWorkflowService
             return new() { State = state };
         }
 
-        var result = JsonSerializer.Deserialize<WorkflowOutput>(state.Output);
+        // use the default json data converter from durable task as the string result from TaskOrchestration is parsed by this converter too
+        var result = JsonDataConverter.Default.Deserialize(state.Output, typeof(TWorkflowResponse));
 
-        return new() { State = state, Result = (TWorkflowResponse?)result?.Output };
+        return new() { State = state, Result = (TWorkflowResponse?)result };
     }
 }
