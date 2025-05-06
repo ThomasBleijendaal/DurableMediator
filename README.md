@@ -1,16 +1,99 @@
 # Durable Mediator
 
 [![#](https://img.shields.io/nuget/v/DurableMediator.OutOfProcess?style=flat-square)](https://www.nuget.org/packages/DurableMediator.OutOfProcess)
+[![#](https://img.shields.io/nuget/v/DurableMediator.HostedService?style=flat-square)](https://www.nuget.org/packages/DurableMediator.HostedService)
 
-Durable Mediator is an extension to the Durable Task library which allows for running MediatR Requests as activities in orchestrations without any complex ceremony.
+Durable Mediator is an extension to the Durable Task library which allows for running MediatR Requests as activities 
+in orchestrations without any complex ceremony.
+
+Variants
+
+- Hosted service 
+- Azure Functions (out-of-process)
+- Azure Functions (in-process)
 
 ## Blog post
 
 https://medium.com/tripleuniverse/how-to-effectively-work-with-stateful-processes-in-a-stateless-environment-ae4d014d5606
 
-## Getting started
+## Getting started (Hosted service)
 
-To get started with running orchestrations which call MediatR Requests as activities, which are called "Workflows", follow these steps:
+To get started with running orchestrations which call MediatR Requests as activities, which are called "Workflows", 
+follow these steps:
+
+First start by defining a workflow request:
+
+```c#
+public record WorkflowRequest(Guid SomeId) : IWorkflowRequest
+{
+    public string WorkflowName => "Human readable workflow name";
+    public string InstanceId => SomeId.ToString();
+};
+```
+
+Also, create a `IRequest` that needs to be called from the workflow:
+
+```c#
+public record MediatorRequest(Guid SomeId) : IRequest;
+```
+
+Create a request handler that handles this MediatR request:
+
+```c#
+public class MediatorRequestHandler : IRequestHandler<MediatorRequest>
+{
+    private readonly ILogger<MediatorRequestHandler> _logger;
+
+    public RequestAHandler(ILogger<MediatorRequestHandler> logger)
+    {
+        _logger = logger;
+    }
+
+    public Task<Unit> Handle(MediatorRequest request, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Processing RequestA");
+
+        return Task.FromResult(Unit.Value);
+    }
+}
+```
+
+Create a workflow that handles the `WorkflowRequest`:
+
+```c#
+public class ExampleWorkflow : IWorkflow<WorkflowRequest>
+{
+    public override async Task OrchestrateAsync(IWorkflowExecution<WorkflowRequest> execution)
+    {
+        var logger = execution.ReplaySafeLogger;
+
+        logger.LogInformation("Start with workflow");
+
+        await execution.SendAsync(new MediatorRequest(execution.Request.SomeId));
+
+        logger.LogInformation("Workflow done");
+    }
+}
+```
+
+Create an ASP.NET endpoint that triggers this workflow:
+
+```c#
+app.MapPost("workflow", async ([FromServices] IWorkflowService workflowService) =>
+{
+    var instanceId = await workflowService.StartWorkflowAsync(new WorkflowRequest(Guid.NewGuid()));
+    return Results.Accepted(null, instanceId);
+});
+```
+
+In your asp.net host builder, add the required MediatR services by including 
+`builder.Services.AddMediatR(config => config.RegisterServicesFromAssemblyContaining<WorkflowRequest>());` 
+and register the workflow using `builder.Services.AddWorkflow<ExampleWorkflow>();`.
+
+## Getting started (Azure Functions)
+
+To get started with running orchestrations which call MediatR Requests as activities, which are called 
+"Workflows", follow these steps:
 
 First start by defining a workflow request:
 
@@ -96,7 +179,8 @@ public static class WorkflowTrigger
 }
 ```
 
-In your function app startup, add the required MediatR services by including `services.AddMediatR(typeof(MediatorRequest).Assembly);`.
+In your function app startup, add the required MediatR services by including 
+`builder.Services.AddMediatR(config => config.RegisterServicesFromAssemblyContaining<WorkflowRequest>());`.
 
 When running your function app you will see that next to the WorkflowTrigger Http Trigger function, an 
 Orchestration Trigger function called "WorkflowRequest" and a "DurableMediatorEntity" Entity Trigger 
@@ -114,8 +198,8 @@ and even await their responses, making it easy to compose workflows.
 
 [![#](https://img.shields.io/nuget/v/DurableMediator.OutOfProcess.Testing?style=flat-square)](https://www.nuget.org/packages/DurableMediator.OutOfProcess.Testing)
 
-See the OutOfProcessFunctionApp.Tests in the example folder for how to test workflows using scenarios. A scenario
-looks like this:
+See the HostedServiceWebapp.Tests or OutOfProcessFunctionApp.Tests in the example folder for how to test 
+workflows using scenarios. A scenario looks like this:
 
 ```c#
 public class ExampleWorkflowScenario : Scenario
@@ -135,9 +219,9 @@ public class ExampleWorkflowScenario : Scenario
 }
 ```
 
-Based on what the Setup configures and simulates, the `RunScenario` should output what MediatR requests the workflow
-should emit. Next to MediatR requests, things like delays, exceptions, calls to other workflows and outputs can be
-completely unit tested.
+Based on what the Setup configures and simulates, the `RunScenario` should output what MediatR requests 
+the workflow should emit. Next to MediatR requests, things like delays, exceptions, calls to other workflows 
+and outputs can be completely unit tested.
 
 
 ## Examples
