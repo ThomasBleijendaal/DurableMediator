@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using DurableMediator.HostedService.Extensions;
+using DurableMediator.HostedService.Models;
 using DurableTask.Core;
 
 namespace DurableMediator.HostedService;
@@ -19,16 +20,26 @@ internal class WorkflowService : IWorkflowService
         return await _taskHubClient.StartWorkflowAsync(workflowRequest);
     }
 
-    public async Task<TWorkflowResponse?> GetWorkflowResultAsync<TWorkflowRequest, TWorkflowResponse>(string instanceId)
+    public async Task<WorkflowResult?> GetWorkflowResultAsync<TWorkflowRequest>(string instanceId)
+        where TWorkflowRequest : IWorkflowRequest
+    {
+        var state = await _taskHubClient.GetOrchestrationStateAsync(new OrchestrationInstance { InstanceId = instanceId });
+        return state == null
+            ? null
+            : new() { State = state };
+    }
+
+    public async Task<WorkflowResult<TWorkflowResponse>?> GetWorkflowResultAsync<TWorkflowRequest, TWorkflowResponse>(string instanceId)
         where TWorkflowRequest : IWorkflowRequest<TWorkflowResponse>
     {
         var state = await _taskHubClient.GetOrchestrationStateAsync(new OrchestrationInstance { InstanceId = instanceId });
-
-        if (state?.Output == null)
+        if (state == null)
         {
             return default;
         }
 
-        return JsonSerializer.Deserialize<TWorkflowResponse>(state.Output);
+        return state.Output == null
+            ? new() { State = state }
+            : new() { State = state, Result = JsonSerializer.Deserialize<TWorkflowResponse>(state.Output) };
     }
 }
