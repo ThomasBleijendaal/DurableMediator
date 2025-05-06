@@ -38,8 +38,13 @@ internal class WorkflowService : IWorkflowService
             return default;
         }
 
-        return state.Output == null
-            ? new() { State = state }
-            : new() { State = state, Result = JsonSerializer.Deserialize<TWorkflowResponse>(state.Output) };
+        if (state.Output == null)
+        {
+            return new() { State = state };
+        }
+
+        var result = JsonSerializer.Deserialize<WorkflowOutput>(state.Output);
+
+        return new() { State = state, Result = (TWorkflowResponse?)result?.Output };
     }
 }

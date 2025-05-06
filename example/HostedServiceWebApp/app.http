@@ -4,6 +4,10 @@ POST {{HostedServiceWebApp_HostAddress}}/basic
 
 ###
 
+GET {{HostedServiceWebApp_HostAddress}}/reusable/reusable-8f45ee6c-0a34-5633-822b-d6419e06cb09
+
+###
+
 POST {{HostedServiceWebApp_HostAddress}}/recovering
 
 ###

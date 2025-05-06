@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using DurableMediator.HostedService.Models;
 using DurableTask.Core;
 using Microsoft.Extensions.Logging;
 
@@ -36,7 +37,7 @@ internal abstract class Workflow
 
         var response = await workflow.OrchestrateAsync(executor);
 
-        return JsonSerializer.Serialize(response);
+        return JsonSerializer.Serialize(new WorkflowOutput(response));
     }
 
     private sealed class ReplaySafeLogger : ILogger

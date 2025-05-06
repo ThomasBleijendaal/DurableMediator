@@ -6,6 +6,7 @@ using HostedServiceWebApp.Middlewares;
 using HostedServiceWebApp.Workflows;
 using Microsoft.AspNetCore.Mvc;
 using WorkflowHandlers.Requests;
+using WorkflowHandlers.Responses;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,12 @@ app.MapPost("basic", async ([FromServices] IWorkflowService workflowService) =>
 {
     var instanceId = await workflowService.StartWorkflowAsync(new BasicWorkflowRequest(Guid.NewGuid()));
     return Results.Accepted(null, instanceId);
+});
+
+app.MapGet("reusable/{id}", async ([FromServices] IWorkflowService workflowService, [FromRoute] string id) =>
+{
+    var result = await workflowService.GetWorkflowResultAsync<ReusableWorkflowRequest, ReusableWorkflowResponse>(id);
+    return Results.Ok(result?.Result);
 });
 
 app.MapPost("recovering", async ([FromServices] IWorkflowService workflowService) =>
