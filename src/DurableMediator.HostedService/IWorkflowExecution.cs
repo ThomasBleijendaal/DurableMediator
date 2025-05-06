@@ -1,10 +1,11 @@
 ﻿using DurableTask.Core;
+using DurableTask.Core.Exceptions;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace DurableMediator.HostedService;
 
-public interface IWorkflowExecution<TRequest>
+public interface IWorkflowExecution
 {
     OrchestrationContext OrchestrationContext { get; }
 
@@ -18,11 +19,6 @@ public interface IWorkflowExecution<TRequest>
     /// </summary>
     /// <returns></returns>
     Guid NewGuid();
-
-    /// <summary>
-    /// The original request that started the workflow.
-    /// </summary>
-    TRequest Request { get; }
 
     /// <summary>
     /// Executes the given request.
@@ -136,4 +132,12 @@ public interface IWorkflowExecution<TRequest>
     /// <param name="token"></param>
     /// <returns></returns>
     Task DelayAsync(TimeSpan delay, CancellationToken token);
+}
+
+public interface IWorkflowExecution<TRequest> : IWorkflowExecution
+{
+    /// <summary>
+    /// The original request that started the workflow.
+    /// </summary>
+    TRequest Request { get; }
 }
