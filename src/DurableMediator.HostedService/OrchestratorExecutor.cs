@@ -62,7 +62,7 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
         TimeSpan? delay,
         CancellationToken token)
     {
-        await _context.CreateTimer(OrchestrationContext.CurrentUtcDateTime.Add(delay ?? TimeSpan.FromSeconds(1)), token);
+        await _context.CreateTimer<object?>(OrchestrationContext.CurrentUtcDateTime.Add(delay ?? TimeSpan.FromSeconds(1)), null, token);
 
         await ExecuteRequestAsync(request, null);
     }
@@ -71,7 +71,7 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
         TimeSpan? delay,
         CancellationToken token)
     {
-        await _context.CreateTimer(OrchestrationContext.CurrentUtcDateTime.Add(delay ?? TimeSpan.FromSeconds(1)), token);
+        await _context.CreateTimer<object?>(OrchestrationContext.CurrentUtcDateTime.Add(delay ?? TimeSpan.FromSeconds(1)), null, token);
 
         return await ExecuteRequestAsync(request, null);
     }
@@ -109,7 +109,7 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
 
     public Task DelayAsync(TimeSpan delay, CancellationToken token)
     {
-        return _context.CreateTimer(DateTime.UtcNow.Add(delay), token);
+        return _context.CreateTimer<object?>(DateTime.UtcNow.Add(delay), null, token);
     }
 
     private async Task ExecuteRequestAsync(IRequest request, RetryOptions? taskOptions)

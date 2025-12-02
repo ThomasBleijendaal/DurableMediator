@@ -9,6 +9,7 @@ internal abstract class Workflow
 {
     public static async Task StartAsync<TWorkflow, TRequest>(OrchestrationContext context, ILogger replayUnsafeLogger, string input)
         where TWorkflow : IWorkflow<TRequest>, new()
+        where TRequest : IWorkflowRequest
     {
         var workflow = new TWorkflow();
 
@@ -24,6 +25,7 @@ internal abstract class Workflow
 
     public static async Task<string> StartAsync<TWorkflow, TRequest, TResponse>(OrchestrationContext context, ILogger replayUnsafeLogger, string input)
         where TWorkflow : IWorkflow<TRequest, TResponse>, new()
+        where TRequest : IWorkflowRequest<TResponse>
     {
         var workflow = new TWorkflow();
 

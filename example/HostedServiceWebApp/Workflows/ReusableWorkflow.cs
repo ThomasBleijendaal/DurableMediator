@@ -14,7 +14,7 @@ public class ReusableWorkflow : IWorkflow<ReusableWorkflowRequest, ReusableWorkf
 
         logger.LogInformation("Start with workflow");
 
-        await execution.OrchestrationContext.CreateTimer(execution.OrchestrationContext.CurrentUtcDateTime.AddSeconds(10), CancellationToken.None);
+        await execution.OrchestrationContext.CreateTimer<object?>(execution.OrchestrationContext.CurrentUtcDateTime.AddSeconds(10), null);
 
         logger.LogInformation("Workflow done");
 
