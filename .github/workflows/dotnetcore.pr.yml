@@ -11,16 +11,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Setup .NET 6
+    - name: Setup .NET 10
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '6.0.x'
-    - name: Setup .NET 8
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '8.0.x'
-    - name: Build Library
-      run: dotnet build --configuration Release ./src/DurableMediator/DurableMediator.csproj
+        dotnet-version: '10.0.x'
     - name: Build Library
       run: dotnet build --configuration Release ./src/DurableMediator.OutOfProcess/DurableMediator.OutOfProcess.csproj
     - name: Build Testing Library

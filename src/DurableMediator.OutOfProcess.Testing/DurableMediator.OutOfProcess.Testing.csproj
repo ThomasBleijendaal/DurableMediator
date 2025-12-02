@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Authors>Thomas Bleijendaal</Authors>
@@ -20,7 +20,7 @@
     <PackageProjectUrl>https://github.com/ThomasBleijendaal/DurableMediator</PackageProjectUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageVersion>$(PackageVersion)</PackageVersion>
-    <ProjectUISubcaption>Out-of-Process - Testing / .NET 8.0</ProjectUISubcaption>
+    <ProjectUISubcaption>Out-of-Process - Testing / .NET 10.0</ProjectUISubcaption>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -45,7 +45,7 @@
 
   <ItemGroup>
     <PackageReference Include="Moq" Version="[4.18.4]" />
-    <PackageReference Include="NUnit" Version="4.0.1" />
+    <PackageReference Include="NUnit" Version="4.4.0" />
   </ItemGroup>
 
 </Project>

@@ -23,7 +23,7 @@ internal class WorkflowCreator<TWorkflow, TRequest> : ObjectCreator<TaskOrchestr
 
 internal class WorkflowCreator<TWorkflow, TRequest, TResponse> : ObjectCreator<TaskOrchestration>
     where TWorkflow : IWorkflow<TRequest, TResponse>, new()
-    where TRequest : IWorkflowRequest
+    where TRequest : IWorkflowRequest<TResponse>
 {
     private readonly ILogger _logger;
 
