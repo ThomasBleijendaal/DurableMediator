@@ -9,6 +9,9 @@
     <FunctionsEnableWorkerIndexing>false</FunctionsEnableWorkerIndexing>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="local.settings.json" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="MediatR" Version="12.5.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.51.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Core" Version="2.51.0" />

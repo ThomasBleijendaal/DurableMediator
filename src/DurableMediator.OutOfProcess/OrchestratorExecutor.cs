@@ -106,6 +106,26 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
         return _context.CreateTimer(delay, token);
     }
 
+    public async Task<T?> WaitForEventAsync<T>(string eventName, TimeSpan timeout)
+        where T : IWorkflowEvent
+    {
+        try
+        {
+            if (timeout == Timeout.InfiniteTimeSpan)
+            {
+                return await _context.WaitForExternalEvent<T>(eventName);
+            }
+            else
+            {
+                return await _context.WaitForExternalEvent<T>(eventName, timeout);
+            }
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or TaskCanceledException)
+        {
+            return default;
+        }
+    }
+
     private async Task ExecuteRequestAsync(IRequest request, TaskOptions? taskOptions)
     {
         await _context.CallDurableMediatorAsync(new MediatorRequest(request), taskOptions);

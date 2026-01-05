@@ -60,4 +60,10 @@ internal class ScenarioSetup<TWorkflowRequest> : IScenarioSetup
             .ReturnsAsync(response);
     }
 
+    public void SetupEvent<TEvent>(string eventName, TEvent? eventData)
+        where TEvent : IWorkflowEvent
+    {
+        _mock.Setup(x => x.WaitForEventAsync<TEvent>(eventName, It.IsAny<TimeSpan>()))
+            .ReturnsAsync(eventData);
+    }
 }

@@ -2,3 +2,27 @@ POST http://localhost:7106/api/basic
 
 ###
 
+POST http://localhost:7106/api/startevent/7309df0f-da70-4a71-9fd0-3b14f3cfd491
+
+###
+
+POST http://localhost:7106/api/signalevent/7309df0f-da70-4a71-9fd0-3b14f3cfd491/1
+
+###
+
+POST http://localhost:7106/api/signalevent/7309df0f-da70-4a71-9fd0-3b14f3cfd491/2
+
+###
+
+POST http://localhost:7106/api/signalevent/7309df0f-da70-4a71-9fd0-3b14f3cfd491/3
+
+###
+
+POST http://localhost:7106/api/signalevent/7309df0f-da70-4a71-9fd0-3b14f3cfd491/4
+
+###
+
+POST http://localhost:7106/api/signalevent/7309df0f-da70-4a71-9fd0-3b14f3cfd491/5
+
+###
+

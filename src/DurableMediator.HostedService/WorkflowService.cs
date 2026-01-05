@@ -1,4 +1,4 @@
-﻿using DurableMediator.HostedService.Extensions;
+﻿using DurableMediator.HostedService.Constants;
 using DurableMediator.HostedService.Models;
 using DurableTask.Core;
 using DurableTask.Core.Serializing;
@@ -17,7 +17,9 @@ internal class WorkflowService : IWorkflowService
     public async Task<string> StartWorkflowAsync<TWorkflowRequest>(TWorkflowRequest workflowRequest)
         where TWorkflowRequest : IWorkflowRequest
     {
-        return await _taskHubClient.StartWorkflowAsync(workflowRequest);
+        var instance = await _taskHubClient.CreateOrchestrationInstanceAsync(workflowRequest.WorkflowName, Versions.Default, workflowRequest.InstanceId, workflowRequest);
+
+        return instance.InstanceId;
     }
 
     public async Task<WorkflowResult?> GetWorkflowResultAsync<TWorkflowRequest>(string instanceId)
@@ -47,5 +49,33 @@ internal class WorkflowService : IWorkflowService
         var result = JsonDataConverter.Default.Deserialize(state.Output, typeof(TWorkflowResponse));
 
         return new() { State = state, Result = (TWorkflowResponse?)result };
+    }
+
+    public async Task RaiseEventAsync<TWorkflowEvent>(TWorkflowEvent @event) where TWorkflowEvent : IWorkflowEvent
+    {
+        if (typeof(TWorkflowEvent).GetInterfaces().FirstOrDefault(x =>
+            x.IsGenericType &&
+            x.GetGenericTypeDefinition() == typeof(IWorkflowEvent<>)) is { } startableWorkflowEventType)
+        {
+            var method = startableWorkflowEventType.GetMethod(nameof(IWorkflowEvent<>.GetWorkflowRequest));
+            var workflowRequest = (IWorkflowRequest)method!.Invoke(@event, [])!;
+
+            var state = await _taskHubClient.GetOrchestrationStateAsync(new OrchestrationInstance { InstanceId = @event.InstanceId });
+
+            if (state == null || !(state.OrchestrationStatus == OrchestrationStatus.Running || state.OrchestrationStatus == OrchestrationStatus.Pending))
+            {
+                await _taskHubClient.CreateOrchestrationInstanceWithRaisedEventAsync(
+                    workflowRequest.WorkflowName,
+                    Versions.Default,
+                    workflowRequest.InstanceId,
+                    workflowRequest,
+                    @event.EventName,
+                    @event);
+
+                return;
+            }
+        }
+
+        await _taskHubClient.RaiseEventAsync(new OrchestrationInstance { InstanceId = @event.InstanceId }, @event.EventName, @event);
     }
 }
