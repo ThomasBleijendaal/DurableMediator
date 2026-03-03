@@ -130,4 +130,14 @@ public interface IWorkflowExecution<TRequest>
     /// <param name="token"></param>
     /// <returns></returns>
     Task DelayAsync(TimeSpan delay, CancellationToken token);
+
+    /// <summary>
+    /// Waits for the external event to get raised. Will return default(T) when max wait time has passed.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="eventName">Name of the event to wait for.</param>
+    /// <param name="timeout">Max time to wait for external event.</param>
+    /// <returns></returns>
+    Task<T?> WaitForEventAsync<T>(string eventName, TimeSpan timeout)
+        where T : IWorkflowEvent;
 }

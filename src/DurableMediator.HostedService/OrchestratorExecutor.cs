@@ -3,34 +3,35 @@ using DurableMediator.HostedService.Constants;
 using DurableMediator.HostedService.Extensions;
 using DurableMediator.HostedService.Managers;
 using DurableMediator.HostedService.Models;
+using DurableMediator.HostedService.Plumbing;
 using DurableTask.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace DurableMediator.HostedService;
 
-internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWorkflowRequest>
+internal partial class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWorkflowRequest>
 {
-    private readonly OrchestrationContext _context;
+    private readonly WorkflowOrchestrationContext _ctx;
     private readonly TWorkflowRequest _request;
     private readonly ILogger _logger;
 
     private int _newGuidCounter;
 
-    public OrchestratorExecutor(OrchestrationContext context, TWorkflowRequest request, ILogger logger)
+    public OrchestratorExecutor(WorkflowOrchestrationContext ctx, TWorkflowRequest request, ILogger logger)
     {
-        _context = context;
+        _ctx = ctx;
         _request = request;
         _logger = logger;
     }
 
-    public OrchestrationContext OrchestrationContext => _context;
+    public OrchestrationContext OrchestrationContext => _ctx.OrchestrationContext;
 
     public ILogger ReplaySafeLogger => _logger;
 
     public Guid NewGuid()
     {
-        var guidNameValue = $"{_context.OrchestrationInstance.InstanceId}_{_context.CurrentUtcDateTime:o}_{_newGuidCounter}";
+        var guidNameValue = $"{_ctx.OrchestrationContext.OrchestrationInstance.InstanceId}_{_ctx.OrchestrationContext.CurrentUtcDateTime:o}_{_newGuidCounter}";
 
         _newGuidCounter++;
 
@@ -62,7 +63,7 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
         TimeSpan? delay,
         CancellationToken token)
     {
-        await _context.CreateTimer<object?>(OrchestrationContext.CurrentUtcDateTime.Add(delay ?? TimeSpan.FromSeconds(1)), null, token);
+        await _ctx.OrchestrationContext.CreateTimer<object?>(OrchestrationContext.CurrentUtcDateTime.Add(delay ?? TimeSpan.FromSeconds(1)), null, token);
 
         await ExecuteRequestAsync(request, null);
     }
@@ -71,7 +72,7 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
         TimeSpan? delay,
         CancellationToken token)
     {
-        await _context.CreateTimer<object?>(OrchestrationContext.CurrentUtcDateTime.Add(delay ?? TimeSpan.FromSeconds(1)), null, token);
+        await _ctx.OrchestrationContext.CreateTimer<object?>(OrchestrationContext.CurrentUtcDateTime.Add(delay ?? TimeSpan.FromSeconds(1)), null, token);
 
         return await ExecuteRequestAsync(request, null);
     }
@@ -82,7 +83,7 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
         int maxAttempts = 3,
         TimeSpan? delay = null)
     {
-        var response = await _context.CallDurableMediatorWithCheckAndResponseAsync(
+        var response = await _ctx.OrchestrationContext.CallDurableMediatorWithCheckAndResponseAsync(
             new MediatorRequestWithCheckAndResponse(request, checkIfRequestApplied),
             DefaultRetryOptions(maxAttempts, delay))
             ?? throw new InvalidOperationException("Received an empty response");
@@ -98,35 +99,41 @@ internal class OrchestratorExecutor<TWorkflowRequest> : IWorkflowExecution<TWork
 
     public Task CallSubWorkflowAsync(IWorkflowRequest request)
     {
-        return _context.CreateSubOrchestrationInstance<dynamic?>(request.WorkflowName, Versions.Default, request.InstanceId, request);
+        return _ctx.OrchestrationContext.CreateSubOrchestrationInstance<dynamic?>(request.WorkflowName, Versions.Default, request.InstanceId, request);
     }
 
     public async Task<TSubWorkflowResponse?> CallSubWorkflowAsync<TSubWorkflowResponse>(IWorkflowRequest<TSubWorkflowResponse> request)
     {
-        var result = await _context.CreateSubOrchestrationInstance<TSubWorkflowResponse?>(request.WorkflowName, Versions.Default, request.InstanceId, request);
+        var result = await _ctx.OrchestrationContext.CreateSubOrchestrationInstance<TSubWorkflowResponse?>(request.WorkflowName, Versions.Default, request.InstanceId, request);
         return result;
     }
 
     public Task DelayAsync(TimeSpan delay, CancellationToken token)
     {
-        return _context.CreateTimer<object?>(DateTime.UtcNow.Add(delay), null, token);
+        return _ctx.OrchestrationContext.CreateTimer<object?>(DateTime.UtcNow.Add(delay), null, token);
+    }
+
+    public Task<T?> WaitForEventAsync<T>(string eventName, TimeSpan timeout)
+        where T : IWorkflowEvent
+    {
+        return _ctx.GetEventTaskAsync<T>(eventName, timeout);
     }
 
     private async Task ExecuteRequestAsync(IRequest request, RetryOptions? taskOptions)
     {
-        await _context.CallDurableMediatorAsync(new MediatorRequest(request), taskOptions);
+        await _ctx.OrchestrationContext.CallDurableMediatorAsync(new MediatorRequest(request), taskOptions);
     }
 
     private async Task<TResponse> ExecuteRequestAsync<TResponse>(IRequest<TResponse> request, RetryOptions? taskOptions)
     {
         if (typeof(TResponse) == typeof(Unit))
         {
-            await _context.CallDurableMediatorAsync(new MediatorRequest(request), taskOptions);
+            await _ctx.OrchestrationContext.CallDurableMediatorAsync(new MediatorRequest(request), taskOptions);
 
             return default!;
         }
 
-        var response = await _context.CallDurableMediatorWithResponseAsync(new MediatorRequestWithResponse(request), taskOptions)
+        var response = await _ctx.OrchestrationContext.CallDurableMediatorWithResponseAsync(new MediatorRequestWithResponse(request), taskOptions)
             ?? throw new InvalidOperationException("Received an empty response");
 
         if (response.Response == null)

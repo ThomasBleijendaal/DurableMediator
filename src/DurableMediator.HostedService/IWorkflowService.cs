@@ -12,4 +12,7 @@ public interface IWorkflowService
 
     Task<WorkflowResult<TWorkflowResponse>?> GetWorkflowResultAsync<TWorkflowRequest, TWorkflowResponse>(string instanceId)
         where TWorkflowRequest : IWorkflowRequest<TWorkflowResponse>;
+
+    Task RaiseEventAsync<TWorkflowEvent>(TWorkflowEvent @event)
+        where TWorkflowEvent : IWorkflowEvent;
 }

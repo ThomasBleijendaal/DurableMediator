@@ -19,6 +19,7 @@ builder.Services.AddWorkflowService(sp => sp.GetRequiredService<AzureStorageOrch
 builder.Services.AddDurableMediator(sp => sp.GetRequiredService<AzureStorageOrchestrationService>());
 
 builder.Services.AddWorkflow<BasicWorkflow>();
+builder.Services.AddWorkflow<ExternalEventWorkflow>();
 builder.Services.AddWorkflow<RecoveringWorkflow>();
 builder.Services.AddWorkflow<ResilientWorkflow>();
 builder.Services.AddWorkflow<ReusableWorkflow>();
@@ -51,6 +52,18 @@ app.MapPost("resilient", async ([FromServices] IWorkflowService workflowService)
 {
     var instanceId = await workflowService.StartWorkflowAsync(new ResilientWorkflowRequest(Guid.NewGuid()));
     return Results.Accepted(null, instanceId);
+});
+
+app.MapPost("startevent/{id:guid}", async ([FromServices] IWorkflowService workflowService, [FromRoute] Guid id) =>
+{
+    var instanceId = await workflowService.StartWorkflowAsync(new ExternalEventWorkflowRequest(id));
+    return Results.Accepted(null, instanceId);
+});
+
+app.MapPost("signalevent/{id:guid}/{eventNr}", async ([FromServices] IWorkflowService workflowService, [FromRoute] Guid id, [FromRoute] string eventNr) =>
+{
+    await workflowService.RaiseEventAsync(new ExternalEvent(eventNr, id, Guid.NewGuid()));
+    return Results.Created();
 });
 
 app.Run();

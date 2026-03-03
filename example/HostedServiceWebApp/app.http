@@ -16,4 +16,26 @@ POST {{HostedServiceWebApp_HostAddress}}/resilient
 
 ###
 
+POST {{HostedServiceWebApp_HostAddress}}/startevent/8d951e9d-e058-567a-bc43-fc7fa843b353
 
+###
+
+POST {{HostedServiceWebApp_HostAddress}}/signalevent/8d951e9d-e058-567a-bc43-fc7fa843b353/1
+
+###
+
+POST {{HostedServiceWebApp_HostAddress}}/signalevent/8d951e9d-e058-567a-bc43-fc7fa843b353/2
+
+###
+
+POST {{HostedServiceWebApp_HostAddress}}/signalevent/8d951e9d-e058-567a-bc43-fc7fa843b353/3
+
+###
+
+POST {{HostedServiceWebApp_HostAddress}}/signalevent/8d951e9d-e058-567a-bc43-fc7fa843b353/4
+
+###
+
+POST {{HostedServiceWebApp_HostAddress}}/signalevent/8d951e9d-e058-567a-bc43-fc7fa843b353/5
+
+###

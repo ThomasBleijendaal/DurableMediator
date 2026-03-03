@@ -1,8 +1,6 @@
 ﻿using DurableMediator.HostedService;
 using DurableMediator.HostedService.Testing;
-using DurableTask.Core;
 using HostedServiceWebApp.Workflows;
-using Moq;
 using WorkflowHandlers.Requests;
 using WorkflowHandlers.Responses;
 
@@ -12,16 +10,13 @@ public class BasicWorkflowScenario : Scenario
 {
     private readonly Guid _requestId = Guid.NewGuid();
 
-    public override void Setup(IScenarioSetup scenarioSetup, Mock<OrchestrationContext> taskOrchestrationContextMock)
-    {
-        scenarioSetup.SetupRequest<SimpleRequest, BasicResponse>(new BasicResponse(Guid.NewGuid()));
-        scenarioSetup.SetupCallSubWorkflow<ReusableWorkflowRequest, ReusableWorkflowResponse>(new ReusableWorkflowResponse("Done"));
-    }
-
     public override IWorkflowRequest Request => new BasicWorkflowRequest(_requestId);
 
     public override IEnumerable<object> RunScenario(IScenarioRun scenarioRun)
     {
+        Setup.SetupRequest<SimpleRequest, BasicResponse>(new BasicResponse(Guid.NewGuid()));
+        Setup.SetupCallSubWorkflow<ReusableWorkflowRequest, ReusableWorkflowResponse>(new ReusableWorkflowResponse("Done"));
+
         yield return new CommandRequest(_requestId, "command");
         yield return new SimpleRequest(_requestId, "1");
         yield return new SimpleRequest(_requestId, "2");

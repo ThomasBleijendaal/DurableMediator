@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using DurableMediator.HostedService.Plumbing;
 using DurableTask.Core;
 using DurableTask.Core.Serializing;
 using Microsoft.Extensions.Logging;
@@ -7,35 +8,35 @@ namespace DurableMediator.HostedService;
 
 internal abstract class Workflow
 {
-    public static async Task StartAsync<TWorkflow, TRequest>(OrchestrationContext context, ILogger replayUnsafeLogger, string input)
+    public static async Task StartAsync<TWorkflow, TRequest>(WorkflowOrchestrationContext ctx, ILogger replayUnsafeLogger, string input)
         where TWorkflow : IWorkflow<TRequest>, new()
         where TRequest : IWorkflowRequest
     {
         var workflow = new TWorkflow();
 
-        var logger = new ReplaySafeLogger(context, replayUnsafeLogger);
+        var logger = new ReplaySafeLogger(ctx.OrchestrationContext, replayUnsafeLogger);
 
-        logger.BeginScope(new Dictionary<string, object?> { { "instanceId", context.OrchestrationInstance.InstanceId } });
+        logger.BeginScope(new Dictionary<string, object?> { { "instanceId", ctx.OrchestrationContext.OrchestrationInstance.InstanceId } });
 
         var request = JsonSerializer.Deserialize<TRequest>(input) ?? throw new InvalidOperationException("Input invalid");
 
-        var executor = new OrchestratorExecutor<TRequest>(context, request, logger);
+        var executor = new OrchestratorExecutor<TRequest>(ctx, request, logger);
         await workflow.OrchestrateAsync(executor);
     }
 
-    public static async Task<string> StartAsync<TWorkflow, TRequest, TResponse>(OrchestrationContext context, ILogger replayUnsafeLogger, string input)
+    public static async Task<string> StartAsync<TWorkflow, TRequest, TResponse>(WorkflowOrchestrationContext ctx, ILogger replayUnsafeLogger, string input)
         where TWorkflow : IWorkflow<TRequest, TResponse>, new()
         where TRequest : IWorkflowRequest<TResponse>
     {
         var workflow = new TWorkflow();
 
-        var logger = new ReplaySafeLogger(context, replayUnsafeLogger);
+        var logger = new ReplaySafeLogger(ctx.OrchestrationContext, replayUnsafeLogger);
 
-        logger.BeginScope(new Dictionary<string, object?> { { "instanceId", context.OrchestrationInstance.InstanceId } });
+        logger.BeginScope(new Dictionary<string, object?> { { "instanceId", ctx.OrchestrationContext.OrchestrationInstance.InstanceId } });
 
         var request = JsonSerializer.Deserialize<TRequest>(input) ?? throw new InvalidOperationException("Input invalid");
 
-        var executor = new OrchestratorExecutor<TRequest>(context, request, logger);
+        var executor = new OrchestratorExecutor<TRequest>(ctx, request, logger);
 
         var response = await workflow.OrchestrateAsync(executor);
 

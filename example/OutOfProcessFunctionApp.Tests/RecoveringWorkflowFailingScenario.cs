@@ -1,7 +1,5 @@
 ﻿using DurableMediator.OutOfProcess;
 using DurableMediator.OutOfProcess.Testing;
-using Microsoft.DurableTask;
-using Moq;
 using OutOfProcessFunctionApp.Workflows;
 using WorkflowHandlers.Requests;
 using WorkflowHandlers.Responses;
@@ -12,16 +10,13 @@ public class RecoveringWorkflowFailingScenario : Scenario
 {
     private readonly Guid _requestId = Guid.NewGuid();
 
-    public override void Setup(IScenarioSetup scenarioSetup, Mock<TaskOrchestrationContext> taskOrchestrationContextMock)
-    {
-        scenarioSetup.SetupRequestWithCheckThrows<FailingRequest, CheckIfFailingRequestAppliedRequest, BasicResponse>(
-            new InvalidOperationException("FailingRequest failed"));
-    }
-
     public override IWorkflowRequest Request => new RecoveringWorkflowRequest(_requestId);
 
     public override IEnumerable<object> RunScenario(IScenarioRun scenarioRun)
     {
+        Setup.SetupRequestWithCheckThrows<FailingRequest, CheckIfFailingRequestAppliedRequest, BasicResponse>(
+            new InvalidOperationException("FailingRequest failed"));
+
         yield return new CheckRequest(
             new FailingRequest(_requestId),
             new CheckIfFailingRequestAppliedRequest(_requestId),

@@ -8,6 +8,7 @@ internal class WorkflowTaskOrchestration<TWorkflow, TRequest> : TaskOrchestratio
     where TRequest : IWorkflowRequest
 {
     private readonly ILogger _logger;
+    private WorkflowOrchestrationContext? _context;
 
     public WorkflowTaskOrchestration(ILogger logger)
     {
@@ -16,7 +17,15 @@ internal class WorkflowTaskOrchestration<TWorkflow, TRequest> : TaskOrchestratio
 
     public override async Task<string> Execute(OrchestrationContext context, string input)
     {
-        await Workflow.StartAsync<TWorkflow, TRequest>(context, _logger, input);
+        _context ??= new()
+        {
+            OrchestrationContext = context
+        };
+
+        var task = Workflow.StartAsync<TWorkflow, TRequest>(_context, _logger, input);
+        await Task.Yield();
+        await task;
+
         return string.Empty;
     }
 
@@ -27,7 +36,7 @@ internal class WorkflowTaskOrchestration<TWorkflow, TRequest> : TaskOrchestratio
 
     public override void RaiseEvent(OrchestrationContext context, string name, string input)
     {
-
+        _context?.CompleteTask(name, input);
     }
 }
 
@@ -36,6 +45,7 @@ internal class WorkflowTaskOrchestration<TWorkflow, TRequest, TResponse> : TaskO
     where TRequest : IWorkflowRequest<TResponse>
 {
     private readonly ILogger _logger;
+    private WorkflowOrchestrationContext? _context;
 
     public WorkflowTaskOrchestration(ILogger logger)
     {
@@ -44,7 +54,12 @@ internal class WorkflowTaskOrchestration<TWorkflow, TRequest, TResponse> : TaskO
 
     public override async Task<string> Execute(OrchestrationContext context, string input)
     {
-        var response = await Workflow.StartAsync<TWorkflow, TRequest, TResponse>(context, _logger, input);
+        _context ??= new()
+        {
+            OrchestrationContext = context
+        };
+
+        var response = await Workflow.StartAsync<TWorkflow, TRequest, TResponse>(_context, _logger, input);
         return response;
     }
 
@@ -55,6 +70,6 @@ internal class WorkflowTaskOrchestration<TWorkflow, TRequest, TResponse> : TaskO
 
     public override void RaiseEvent(OrchestrationContext context, string name, string input)
     {
-
+        _context?.CompleteTask(name, input);
     }
 }

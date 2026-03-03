@@ -20,4 +20,7 @@ public interface IScenarioSetup
 
     void SetupCallSubWorkflow<TWorkflowRequest, TWorkflowResponse>(TWorkflowResponse response)
         where TWorkflowRequest : IWorkflowRequest<TWorkflowResponse>;
+
+    void SetupEvent<TEvent>(string eventName, TEvent? eventData)
+        where TEvent : IWorkflowEvent;
 }

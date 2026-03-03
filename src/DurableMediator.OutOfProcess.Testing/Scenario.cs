@@ -12,7 +12,9 @@ public abstract class Scenario : IEnumerable
         yield return new TestCaseData(this).SetName($"{nameof(ScenarioTestBase.ScenarioAsync)}({GetType().Name})");
     }
 
-    public abstract void Setup(IScenarioSetup scenarioSetup, Mock<TaskOrchestrationContext> taskOrchestrationContextMock);
+    public IScenarioSetup Setup { get; internal set; }
+
+    public Mock<TaskOrchestrationContext> ContextMock { get; internal set; }
 
     public abstract IWorkflowRequest Request { get; }
 
@@ -27,4 +29,6 @@ public abstract class Scenario : IEnumerable
     public record Throws(Type Exception);
 
     public record Output(object? Result);
+
+    public record WaitForEvent<T>(string EventName, TimeSpan TimeOut) where T : IWorkflowEvent;
 }

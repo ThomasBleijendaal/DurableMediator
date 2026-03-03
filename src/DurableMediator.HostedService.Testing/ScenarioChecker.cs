@@ -97,6 +97,13 @@ internal class ScenarioChecker<TWorkflowRequest> : IWorkflowExecution<TWorkflowR
         return _execution.SendWithRetryAsync(request, maxAttempts, delay);
     }
 
+    public Task<T?> WaitForEventAsync<T>(string eventName, TimeSpan timeout)
+        where T : IWorkflowEvent
+    {
+        CheckRequest(new Scenario.WaitForEvent<T>(eventName, timeout));
+        return _execution.WaitForEventAsync<T>(eventName, timeout);
+    }
+
     internal void CheckRequest<TRequest>(TRequest request)
     {
         Invocations++;

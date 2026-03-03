@@ -31,7 +31,8 @@ public abstract class ScenarioTestBase
 
         var setup = new ScenarioSetup<TWorkflowRequest>(executionMock);
 
-        scenario.Setup(setup, orchestrationContextMock);
+        scenario.Setup = setup;
+        scenario.ContextMock = orchestrationContextMock;
 
         var scenarioRun = new ScenarioRun();
 
